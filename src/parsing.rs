@@ -2,13 +2,31 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
 
-pub fn parsing(filename: &Path) -> io::Result<()> {
+fn read_file(filename: &Path) -> io::Result<Vec<String>> {
 	let file = File::open(filename)?;
 	let reader = BufReader::new(file);
-	let puzzle = reader.lines();
-	for line in puzzle {
-		println!("{}", line?);
-	}
+	let lines = reader.lines();
+	return lines.collect();
+}
+
+fn sanitize_comments(lines: &mut Vec<String>) -> Vec<String> {
+	lines
+		.into_iter()
+		.map(|lines| {
+			if let Some(split) = lines.split("#").next() {
+				split.to_string()
+			} else {
+				"".to_string()
+			}
+		})
+		.filter(|new_line| new_line.len() != 0)
+		.collect()
+}
+
+pub fn parsing(filename: &Path) -> io::Result<()> {
+	let mut file_lines_with_comments = read_file(filename)?;
+	let files_lines = sanitize_comments(&mut file_lines_with_comments);
+	println!("{:?}", files_lines);
 	Ok(())
 }
 
