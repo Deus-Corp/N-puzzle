@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
+use std::num::ParseIntError;
 use std::path::Path;
 
 type Puzzle = Vec<Vec<u8>>;
@@ -21,16 +22,16 @@ fn sanitize_comments(lines: &mut Vec<String>) -> Vec<String> {
 		.collect()
 }
 
-fn parse_puzzle(lines: Vec<String>) -> Result<Puzzle, Box<dyn Error>> {
-	Ok(lines
+fn parse_puzzle(lines: Vec<String>) -> Result<Puzzle, ParseIntError> {
+	lines
 		.into_iter()
 		.skip(1)
 		.map(|line| {
 			line.split_whitespace()
-				.map(|number| number.parse().unwrap())
-				.collect()
+				.map(|number| number.parse::<u8>())
+				.collect::<Result<Vec<u8>, ParseIntError>>()
 		})
-		.collect())
+		.collect::<Result<Puzzle, ParseIntError>>()
 }
 
 pub fn parsing(filename: &Path) -> Result<Puzzle, Box<dyn Error>> {
