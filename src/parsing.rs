@@ -12,14 +12,9 @@ fn read_file(filename: &Path) -> io::Result<Vec<String>> {
 fn sanitize_comments(lines: &mut Vec<String>) -> Vec<String> {
 	lines
 		.into_iter()
-		.map(|lines| {
-			if let Some(split) = lines.split("#").next() {
-				split.to_string()
-			} else {
-				"".to_string()
-			}
-		})
+		.filter_map(|lines| lines.split("#").next())
 		.filter(|new_line| new_line.len() != 0)
+		.map(|s| s.to_string())
 		.collect()
 }
 
