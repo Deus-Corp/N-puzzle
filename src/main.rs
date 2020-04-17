@@ -1,3 +1,7 @@
+mod parsing;
+use std::path::Path;
+
 fn main() {
-    println!("Hello, world!");
+	let path = Path::new("./puzzles/subject-1.txt");
+	parsing::parsing(path);
 }
