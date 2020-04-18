@@ -22,7 +22,11 @@ fn sanitize_comments(lines: &Vec<String>) -> Vec<String> {
 		.collect()
 }
 
-fn parse_puzzle(lines: &[String]) -> Result<Matrix, ParseIntError> {
+fn parse_matrix_size(line: &String) -> Result<u8, ParseIntError> {
+	line.trim().parse::<u8>()
+}
+
+fn parse_matrix(lines: &[String]) -> Result<Matrix, ParseIntError> {
 	lines
 		.into_iter()
 		.map(|line| {
@@ -33,11 +37,11 @@ fn parse_puzzle(lines: &[String]) -> Result<Matrix, ParseIntError> {
 		.collect::<Result<Matrix, ParseIntError>>()
 }
 
-pub fn parsing(filename: &Path) -> Result<(u8, Matrix), Box<dyn Error>> {
+pub fn parse_puzzle(filename: &Path) -> Result<(u8, Matrix), Box<dyn Error>> {
 	let file_lines = read_file(filename)?;
 	let puzzle_maybe = sanitize_comments(&file_lines);
-	let size = puzzle_maybe[0].trim().parse::<u8>()?;
-	let matrix = parse_puzzle(&puzzle_maybe[1..])?;
+	let size = parse_matrix_size(&puzzle_maybe[0])?;
+	let matrix = parse_matrix(&puzzle_maybe[1..])?;
 	Ok((size, matrix))
 }
 
@@ -48,14 +52,14 @@ mod tests {
 	#[test]
 	fn test_bad_path() {
 		let path = Path::new("asldkfjasdlkfjas;dlfj");
-		assert_eq!(parsing(path).is_err(), true);
+		assert_eq!(parse_puzzle(path).is_err(), true);
 	}
 
 	#[test]
 	fn test_subject_1() {
 		let path = Path::new("./puzzles/subject-1.txt");
 		assert_eq!(
-			parsing(path).unwrap(),
+			parse_puzzle(path).unwrap(),
 			(3, vec![vec![3, 2, 6], vec![1, 4, 0], vec![8, 7, 5]])
 		);
 	}
@@ -64,7 +68,7 @@ mod tests {
 	fn test_subject_2() {
 		let path = Path::new("./puzzles/subject-2.txt");
 		assert_eq!(
-			parsing(path).unwrap(),
+			parse_puzzle(path).unwrap(),
 			(
 				4,
 				vec![
@@ -81,7 +85,7 @@ mod tests {
 	fn test_subject_3() {
 		let path = Path::new("./puzzles/subject-3.txt");
 		assert_eq!(
-			parsing(path).unwrap(),
+			parse_puzzle(path).unwrap(),
 			(
 				4,
 				vec![
