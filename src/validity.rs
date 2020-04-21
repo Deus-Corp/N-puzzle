@@ -10,26 +10,43 @@ fn get_inversion_count(arr: &Vec<u8>) -> usize {
 	inversions
 }
 
-fn is_solvable(matrix: &Vec<Vec<u8>>) -> bool {
-	let flatten_matrix: Vec<u8> = matrix.iter().flat_map(|row| row.iter()).cloned().collect();
-	println!("{:?}", flatten_matrix);
-	let inv = get_inversion_count(&flatten_matrix);
-	println!("{}", inv);
-	inv % 2 == 0
-}
-
-fn is_format_coherent(size: u8, matrix: &Vec<Vec<u8>>) -> bool {
-	if matrix.len() != size as usize {
-		return false;
-	}
-	for rows in matrix {
-		if rows.len() != size as usize {
-			return false;
+fn get_blank_index(arr: &Vec<u8>) -> usize {
+	for i in 0..arr.len() {
+		if arr[i] == 0 {
+			return i;
 		}
 	}
-	true
+	panic!("Why there is no blank ?!");
 }
 
-pub fn check_puzzle(size: u8, matrix: &Vec<Vec<u8>>) -> bool {
-	is_format_coherent(size, matrix) && is_solvable(matrix)
+fn get_blank_row_from_bottom(mflat: &Vec<u8>, msize: usize) -> usize {
+	msize - get_blank_index(mflat) / msize
+}
+
+fn is_even(n: usize) -> bool {
+	n % 2 == 0
+}
+
+// [https://www.cs.bham.ac.uk/~mdr/teaching/modules04/java2/TilesSolvability.html]
+//
+// Formula for determining solvability:
+// ((grid width is odd) && (# is even)) || ((grid width is even) && ((blank is on odd row from bottom) == (# is even)))
+//
+fn is_solvable(mflat: &Vec<u8>, msize: usize) -> bool {
+	let inversions = get_inversion_count(mflat);
+	if is_even(msize) {
+		let blank_row = get_blank_row_from_bottom(mflat, msize);
+		!is_even(blank_row) == is_even(inversions)
+	} else {
+		is_even(inversions)
+	}
+}
+
+fn is_format_coherent(matrix: &Vec<Vec<u8>>, msize: usize) -> bool {
+	matrix.len() == msize as usize && matrix.iter().all(|row| row.len() == msize as usize)
+}
+
+pub fn check_puzzle(matrix: &Vec<Vec<u8>>, msize: usize) -> bool {
+	let flatten_matrix: Vec<u8> = matrix.iter().flat_map(|row| row.iter()).cloned().collect();
+	is_format_coherent(matrix, msize) && is_solvable(&flatten_matrix, msize)
 }

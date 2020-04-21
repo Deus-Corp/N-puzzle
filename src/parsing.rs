@@ -22,8 +22,8 @@ fn sanitize_comments(lines: &Vec<String>) -> Vec<String> {
 		.collect()
 }
 
-fn parse_matrix_size(line: &String) -> Result<u8, ParseIntError> {
-	line.trim().parse::<u8>()
+fn parse_matrix_size(line: &String) -> Result<usize, ParseIntError> {
+	line.trim().parse::<usize>()
 }
 
 fn parse_matrix(lines: &[String]) -> Result<Matrix, ParseIntError> {
@@ -37,12 +37,12 @@ fn parse_matrix(lines: &[String]) -> Result<Matrix, ParseIntError> {
 		.collect::<Result<Matrix, ParseIntError>>()
 }
 
-pub fn parse_puzzle(filename: &Path) -> Result<(u8, Matrix), Box<dyn Error>> {
+pub fn parse_puzzle(filename: &Path) -> Result<(usize, Matrix), Box<dyn Error>> {
 	let file_lines = read_file(filename)?;
 	let puzzle_maybe = sanitize_comments(&file_lines);
-	let size = parse_matrix_size(&puzzle_maybe[0])?;
+	let msize = parse_matrix_size(&puzzle_maybe[0])?;
 	let matrix = parse_matrix(&puzzle_maybe[1..])?;
-	Ok((size, matrix))
+	Ok((msize, matrix))
 }
 
 #[cfg(test)]
