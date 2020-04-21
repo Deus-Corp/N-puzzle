@@ -4,7 +4,7 @@ use std::io::{self, BufRead, BufReader};
 use std::num::ParseIntError;
 use std::path::Path;
 
-type Matrix = Vec<Vec<u8>>;
+type Matrix = Vec<Vec<u16>>;
 
 fn read_file(filename: &Path) -> io::Result<Vec<String>> {
 	let file = File::open(filename)?;
@@ -31,8 +31,8 @@ fn parse_matrix(lines: &[String]) -> Result<Matrix, ParseIntError> {
 		.into_iter()
 		.map(|line| {
 			line.split_whitespace()
-				.map(|number| number.parse::<u8>())
-				.collect::<Result<Vec<u8>, ParseIntError>>()
+				.map(|number| number.parse::<u16>())
+				.collect::<Result<Vec<u16>, ParseIntError>>()
 		})
 		.collect::<Result<Matrix, ParseIntError>>()
 }
