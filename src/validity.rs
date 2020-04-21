@@ -1,15 +1,56 @@
-// [https://www.geeksforgeeks.org/counting-inversions/]
-//
-fn get_inversion_count(arr: &Vec<u16>) -> usize {
+fn merge(arr: &mut Vec<u16>, tmp: &mut Vec<u16>, left: usize, mid: usize, right: usize) -> usize {
 	let mut inversions = 0;
-	for i in 0..arr.len() - 1 {
-		for j in (i + 1)..arr.len() {
-			if arr[j] != 0 && arr[i] != 0 && arr[i] > arr[j] {
-				inversions += 1;
+	let mut i = left;
+	let mut j = mid;
+	let mut k = left;
+	while i <= (mid - 1) && j <= right {
+		if arr[i] <= arr[j] {
+			tmp[k] = arr[i];
+			k += 1;
+			i += 1;
+		} else {
+			tmp[k] = arr[j];
+			// ignore blank tile aka 0
+			if arr[j] != 0 {
+				inversions += mid - i;
 			}
+			k += 1;
+			j += 1;
 		}
 	}
+	while i <= (mid - 1) {
+		tmp[k] = arr[i];
+		k += 1;
+		i += 1;
+	}
+	while j <= right {
+		tmp[k] = arr[j];
+		k += 1;
+		j += 1;
+	}
+	for i in left..=right {
+		arr[i] = tmp[i];
+	}
 	inversions
+}
+
+fn merge_sort(arr: &mut Vec<u16>, tmp: &mut Vec<u16>, left: usize, right: usize) -> usize {
+	let mut inversions = 0;
+	if right > left {
+		let mid = (right + left) / 2;
+		inversions += merge_sort(arr, tmp, left, mid);
+		inversions += merge_sort(arr, tmp, mid + 1, right);
+		inversions += merge(arr, tmp, left, mid + 1, right);
+	}
+	inversions
+}
+
+// [https://www.geeksforgeeks.org/counting-inversions/]
+//
+fn get_inversion_count_with_merge_sort(arr: &Vec<u16>) -> usize {
+	let mut tmp = vec![0u16; arr.len()];
+	let mut copy = arr.clone();
+	merge_sort(&mut copy, &mut tmp, 0, arr.len() - 1)
 }
 
 fn get_blank_index(arr: &Vec<u16>) -> usize {
@@ -21,12 +62,19 @@ fn get_blank_index(arr: &Vec<u16>) -> usize {
 	panic!("Why there is no blank ?!");
 }
 
+#[inline]
 fn get_blank_row_from_bottom(mflat: &Vec<u16>, msize: usize) -> usize {
 	msize - get_blank_index(mflat) / msize
 }
 
+#[inline]
 fn is_even(n: usize) -> bool {
 	n % 2 == 0
+}
+
+#[inline]
+fn get_inversions(arr: &Vec<u16>) -> usize {
+	get_inversion_count_with_merge_sort(arr)
 }
 
 // [https://www.geeksforgeeks.org/check-instance-15-puzzle-solvable/]
@@ -36,7 +84,7 @@ fn is_even(n: usize) -> bool {
 // ((grid width is odd) && (# is even)) || ((grid width is even) && ((blank is on odd row from bottom) == (# is even)))
 //
 fn is_solvable(mflat: &Vec<u16>, msize: usize) -> bool {
-	let inversions = get_inversion_count(mflat);
+	let inversions = get_inversions(mflat);
 	if !is_even(msize) {
 		is_even(inversions)
 	} else {
@@ -59,27 +107,27 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn test_inversion_count() {
-		assert_eq!(get_inversion_count(&vec![3, 1, 2]), 2);
-		assert_eq!(get_inversion_count(&vec![8, 4, 2, 1]), 6);
+	fn test_inversions() {
+		assert_eq!(get_inversions(&vec![3, 1, 2]), 2);
+		assert_eq!(get_inversions(&vec![8, 4, 2, 1]), 6);
 	}
 
 	#[test]
-	fn test_inversion_count_with_blank() {
+	fn test_get_inversions_with_blank() {
 		assert_eq!(
-			get_inversion_count(&vec![12, 1, 10, 2, 7, 11, 4, 14, 5, 0, 9, 15, 8, 13, 6, 3]),
+			get_inversions(&vec![12, 1, 10, 2, 7, 11, 4, 14, 5, 0, 9, 15, 8, 13, 6, 3]),
 			49
 		);
 		assert_eq!(
-			get_inversion_count(&vec![12, 1, 10, 2, 7, 0, 4, 14, 5, 11, 9, 15, 8, 13, 6, 3]),
+			get_inversions(&vec![12, 1, 10, 2, 7, 0, 4, 14, 5, 11, 9, 15, 8, 13, 6, 3]),
 			48
 		);
-		assert_eq!(get_inversion_count(&vec![7, 1, 2, 5, 3, 9, 8, 0, 6]), 9);
-		assert_eq!(get_inversion_count(&vec![7, 1, 2, 5, 0, 9, 8, 3, 6]), 11);
+		assert_eq!(get_inversions(&vec![7, 1, 2, 5, 3, 9, 8, 0, 6]), 9);
+		assert_eq!(get_inversions(&vec![7, 1, 2, 5, 0, 9, 8, 3, 6]), 11);
 	}
 
 	#[test]
-	fn test_get_blank_row() {
+	fn test_blank_row() {
 		assert_eq!(
 			get_blank_row_from_bottom(
 				&vec![12, 1, 10, 2, 7, 11, 4, 14, 5, 0, 9, 15, 8, 13, 6, 3],
