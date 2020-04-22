@@ -1,28 +1,34 @@
-fn merge_sort(arr: &[u16], tmp: &mut Vec<u16>) -> usize {
-	if arr.len() == 1 {
-		return 0;
-	}
-	let mut inversions = 0;
-	let mid = arr.len() / 2;
-	let left = &arr[..mid];
-	let right = &arr[mid..];
-	inversions += merge_sort(left, tmp);
-	inversions += merge_sort(right, tmp);
+fn merge_count_split_inversion(left: Vec<u16>, right: Vec<u16>) -> (Vec<u16>, usize) {
+	let mut result = vec![];
+	let mut count = 0;
 	let mut i = 0;
 	let mut j = 0;
 	while i < left.len() && j < right.len() {
 		if left[i] <= right[j] {
-			tmp.push(left[i]);
+			result.push(left[i]);
 			i += 1;
 		} else {
-			tmp.push(right[j]);
-			inversions += left.len() - i;
+			result.push(right[j]);
+			count += left.len() - i;
 			j += 1;
 		}
 	}
-	tmp.extend_from_slice(&left[i..]);
-	tmp.extend_from_slice(&right[j..]);
-	inversions
+	result.extend_from_slice(&left[i..]);
+	result.extend_from_slice(&right[j..]);
+	(result, count)
+}
+
+// [http://mijkenator.github.io/2016/12/10/2016-12-10-mergesort-inversion-count/]
+//
+fn merge_count_inversion(arr: Vec<u16>) -> (Vec<u16>, usize) {
+	if arr.len() <= 1 {
+		return (arr, 0);
+	}
+	let middle = arr.len() / 2;
+	let (left, a) = merge_count_inversion(arr[..middle].to_vec());
+	let (right, b) = merge_count_inversion(arr[middle..].to_vec());
+	let (result, c) = merge_count_split_inversion(left, right);
+	(result, a + b + c)
 }
 
 fn get_blank_index(arr: &Vec<u16>) -> usize {
@@ -34,11 +40,24 @@ fn get_blank_index(arr: &Vec<u16>) -> usize {
 	panic!("Why there is no blank ?!");
 }
 
+fn get_inversions_naive(arr: &Vec<u16>) -> usize {
+	let mut inversions = 0;
+	for i in 0..arr.len() - 1 {
+		for j in (i + 1)..arr.len() {
+			if arr[i] > arr[j] {
+				inversions += 1;
+			}
+		}
+	}
+	inversions
+}
+
 // [https://www.geeksforgeeks.org/counting-inversions/]
 //
 fn get_inversion_count_with_merge_sort(arr: &Vec<u16>) -> usize {
-	let mut tmp = vec![];
-	let inversions = merge_sort(arr, &mut tmp);
+	let mut tmp = arr.clone();
+	tmp.remove(get_blank_index(&tmp));
+	let inversions = merge_count_inversion(tmp).1;
 	inversions
 }
 
@@ -87,23 +106,48 @@ mod tests {
 	use super::*;
 
 	#[test]
+
 	fn test_inversions() {
-		assert_eq!(get_inversions(&vec![3, 1, 2]), 2);
-		assert_eq!(get_inversions(&vec![8, 4, 2, 1]), 6);
+		let vec1 = vec![3, 1, 2];
+		let vec2 = vec![8, 4, 2, 1];
+		let vec3 = vec![1, 2, 3, 5, 4, 6];
+		let vec4 = vec![6, 4, 5, 1, 3, 2];
+		let vec5 = vec![1, 2, 4, 3, 5, 6, 7, 9, 8];
+		let vec6 = vec![2, 1, 3, 5, 4];
+		let vec7 = vec![1, 9, 6, 4, 5];
+		let vec8 = vec![12, 1, 10, 2, 7, 11, 4, 14, 5, 9, 15, 8, 13, 6, 3];
+		assert_eq!(get_inversions(&vec1), get_inversions_naive(&vec1));
+		assert_eq!(get_inversions(&vec2), get_inversions_naive(&vec2));
+		assert_eq!(get_inversions(&vec3), get_inversions_naive(&vec3));
+		assert_eq!(get_inversions(&vec4), get_inversions_naive(&vec4));
+		assert_eq!(get_inversions(&vec5), get_inversions_naive(&vec5));
+		assert_eq!(get_inversions(&vec6), get_inversions_naive(&vec6));
+		assert_eq!(get_inversions(&vec7), get_inversions_naive(&vec7));
+		assert_eq!(get_inversions(&vec8), get_inversions_naive(&vec8));
 	}
 
 	#[test]
 	fn test_get_inversions_with_blank() {
-		assert_eq!(
-			get_inversions(&vec![12, 1, 10, 2, 7, 11, 4, 14, 5, 0, 9, 15, 8, 13, 6, 3]),
-			49
-		);
-		assert_eq!(
-			get_inversions(&vec![12, 1, 10, 2, 7, 0, 4, 14, 5, 11, 9, 15, 8, 13, 6, 3]),
-			48
-		);
-		assert_eq!(get_inversions(&vec![7, 1, 2, 5, 3, 9, 8, 0, 6]), 9);
-		assert_eq!(get_inversions(&vec![7, 1, 2, 5, 0, 9, 8, 3, 6]), 11);
+		let vec1 = vec![12, 1, 10, 2, 7, 11, 4, 14, 5, 0, 9, 15, 8, 13, 6, 3];
+		let vec2 = vec![12, 1, 10, 2, 7, 0, 4, 14, 5, 11, 9, 15, 8, 13, 6, 3];
+		let vec3 = vec![7, 1, 2, 5, 3, 9, 8, 0, 6];
+		let vec4 = vec![7, 1, 2, 5, 0, 9, 8, 3, 6];
+		let mut arr1 = vec1.clone();
+		let mut arr2 = vec2.clone();
+		let mut arr3 = vec3.clone();
+		let mut arr4 = vec4.clone();
+		arr1.remove(get_blank_index(&arr1));
+		arr2.remove(get_blank_index(&arr2));
+		arr3.remove(get_blank_index(&arr3));
+		arr4.remove(get_blank_index(&arr4));
+		assert_eq!(get_inversions_naive(&arr1), 49);
+		assert_eq!(get_inversions_naive(&arr2), 48);
+		assert_eq!(get_inversions_naive(&arr3), 9);
+		assert_eq!(get_inversions_naive(&arr4), 11);
+		assert_eq!(get_inversions(&arr1), get_inversions_naive(&arr1));
+		assert_eq!(get_inversions(&arr2), 48);
+		assert_eq!(get_inversions(&arr3), 9);
+		assert_eq!(get_inversions(&arr4), 11);
 	}
 
 	// #[test]
