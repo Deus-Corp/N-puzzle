@@ -1,4 +1,7 @@
-fn merge_count_split_inversion(left: Vec<u16>, right: Vec<u16>) -> (Vec<u16>, usize) {
+fn merge_count_split_inversion(
+	left: Vec<u16>,
+	right: Vec<u16>,
+) -> (Vec<u16>, usize) {
 	let mut result = vec![];
 	let mut count = 0;
 	let mut i = 0;
@@ -9,7 +12,10 @@ fn merge_count_split_inversion(left: Vec<u16>, right: Vec<u16>) -> (Vec<u16>, us
 			i += 1;
 		} else {
 			result.push(right[j]);
-			count += left.len() - i;
+			// ignore blank
+			if right[j] != 0 {
+				count += left.len() - i;
+			}
 			j += 1;
 		}
 	}
@@ -18,7 +24,7 @@ fn merge_count_split_inversion(left: Vec<u16>, right: Vec<u16>) -> (Vec<u16>, us
 	(result, count)
 }
 
-fn merge_count_inversion(arr: &[u16]) -> (Vec<u16>, usize) {
+pub fn merge_count_inversion(arr: &[u16]) -> (Vec<u16>, usize) {
 	if arr.len() <= 1 {
 		return (arr.to_vec(), 0);
 	}
@@ -32,15 +38,21 @@ fn merge_count_inversion(arr: &[u16]) -> (Vec<u16>, usize) {
 // [https://www.geeksforgeeks.org/counting-inversions/]
 // [http://mijkenator.github.io/2016/12/10/2016-12-10-mergesort-inversion-count/]
 //
-pub fn merge_sort(arr: &Vec<u16>) -> usize {
+#[allow(dead_code)]
+fn merge_sort(arr: &Vec<u16>) -> usize {
 	let (_, inversions) = merge_count_inversion(arr);
 	inversions
 }
 
-pub fn naive(arr: &Vec<u16>) -> usize {
+#[allow(dead_code)]
+fn naive(arr: &Vec<u16>) -> usize {
 	let mut inversions = 0;
 	for i in 0..arr.len() - 1 {
 		for j in (i + 1)..arr.len() {
+			// ignore blank
+			if arr[i] == 0 || arr[j] == 0 {
+				continue;
+			}
 			if arr[i] > arr[j] {
 				inversions += 1;
 			}

@@ -6,9 +6,21 @@ mod inversions;
 mod parsing;
 mod validity;
 
+fn usage() {
+	println!("usage: ./n-puzzle [path_to_puzzle]");
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
-	let args = env::args().collect::<Vec<_>>();
+	let args: Vec<String> = env::args().collect();
+	if args.len() < 2 {
+		usage();
+		return Ok(());
+	}
 	let path = Path::new(&args[1]);
+	if !path.is_file() {
+		println!("Invalid file");
+		return Ok(());
+	}
 	let (msize, matrix) = parsing::parse_puzzle(path)?;
 	if !validity::check_puzzle(&matrix, msize) {
 		println!("Invalid puzzle");

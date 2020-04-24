@@ -6,12 +6,10 @@ fn get_blank_index(arr: &Vec<u16>) -> usize {
 		.expect("No blank, invalid puzzle !")
 }
 
-#[inline]
 fn get_blank_row_from_bottom(mflat: &Vec<u16>, msize: usize) -> usize {
 	msize - get_blank_index(mflat) / msize
 }
 
-#[inline]
 fn is_even(n: usize) -> bool {
 	n % 2 == 0
 }
@@ -22,10 +20,7 @@ fn is_even(n: usize) -> bool {
 // Formula for determining solvability:
 // ((grid width is odd) && (# is even)) || ((grid width is even) && ((blank is on odd row from bottom) == (# is even)))
 //
-fn is_solvable(mflat: &Vec<u16>, msize: usize) -> bool {
-	let mut without_blank = mflat.clone();
-	without_blank.remove(get_blank_index(mflat));
-	let inversions = inversions::merge_sort(&without_blank);
+fn is_solvable(mflat: &Vec<u16>, msize: usize, inversions: usize) -> bool {
 	if !is_even(msize) {
 		is_even(inversions)
 	} else {
@@ -34,13 +29,22 @@ fn is_solvable(mflat: &Vec<u16>, msize: usize) -> bool {
 	}
 }
 
-fn is_format_coherent(matrix: &Vec<Vec<u16>>, msize: usize) -> bool {
+fn is_puzzle(sorted: Vec<u16>) -> bool {
+	sorted.windows(2).all(|w| w[0] <= w[1])
+}
+
+fn is_nxn(matrix: &Vec<Vec<u16>>, msize: usize) -> bool {
 	matrix.len() == msize && matrix.iter().all(|row| row.len() == msize)
 }
 
 pub fn check_puzzle(matrix: &Vec<Vec<u16>>, msize: usize) -> bool {
-	let flatten_matrix: Vec<u16> = matrix.iter().flat_map(|row| row.iter()).cloned().collect();
-	is_format_coherent(matrix, msize) && is_solvable(&flatten_matrix, msize)
+	let flatten_matrix: Vec<u16> =
+		matrix.iter().flat_map(|row| row.iter()).cloned().collect();
+	let (sorted, inversions) =
+		inversions::merge_count_inversion(&flatten_matrix);
+	is_nxn(matrix, msize)
+		&& is_puzzle(sorted)
+		&& is_solvable(&flatten_matrix, msize, inversions)
 }
 
 #[cfg(test)]
