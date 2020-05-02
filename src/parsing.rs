@@ -4,7 +4,7 @@ use std::io::{self, BufRead, BufReader};
 use std::num::ParseIntError;
 use std::path::Path;
 
-type Matrix = Vec<Vec<u16>>;
+use super::puzzle::Matrix;
 
 fn read_file(path: &Path) -> io::Result<Vec<String>> {
 	let file = File::open(path)?;

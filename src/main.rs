@@ -4,7 +4,11 @@ use std::path::Path;
 
 mod inversions;
 mod parsing;
+mod puzzle;
+mod solution;
 mod validity;
+
+use puzzle::Puzzle;
 
 fn usage() {
 	println!("usage: ./n-puzzle [path_to_puzzle]");
@@ -16,16 +20,20 @@ fn main() -> Result<(), Box<dyn Error>> {
 		usage();
 		return Ok(());
 	}
+
 	let path = Path::new(&args[1]);
 	if !path.is_file() {
 		println!("Invalid file");
 		return Ok(());
 	}
 	let (msize, matrix) = parsing::parse_puzzle(path)?;
-	if !validity::check_puzzle(&matrix, msize) {
+
+	let puzzle = Puzzle::from_matrix(msize, matrix);
+	if !validity::check_puzzle(&puzzle) {
 		println!("Invalid puzzle");
 		return Ok(());
 	}
-	println!("{:?} {:?}", msize, matrix);
+
+	solution::solve(puzzle);
 	Ok(())
 }

@@ -1,4 +1,5 @@
 use super::inversions;
+use super::puzzle::Puzzle;
 
 fn get_blank_index(arr: &Vec<u16>) -> usize {
 	arr.iter()
@@ -20,11 +21,11 @@ fn is_even(n: usize) -> bool {
 // Formula for determining solvability:
 // ((grid width is odd) && (# is even)) || ((grid width is even) && ((blank is on odd row from bottom) == (# is even)))
 //
-fn is_solvable(mflat: &Vec<u16>, msize: usize, inversions: usize) -> bool {
-	if !is_even(msize) {
+fn is_solvable(puzzle: &Puzzle, inversions: usize) -> bool {
+	if !is_even(puzzle.n) {
 		is_even(inversions)
 	} else {
-		let blank_row = get_blank_row_from_bottom(mflat, msize);
+		let blank_row = get_blank_row_from_bottom(&puzzle.flat, puzzle.n);
 		is_even(inversions) == !is_even(blank_row)
 	}
 }
@@ -33,18 +34,14 @@ fn is_puzzle(sorted: Vec<u16>) -> bool {
 	sorted.windows(2).all(|w| w[0] <= w[1])
 }
 
-fn is_nxn(matrix: &Vec<Vec<u16>>, msize: usize) -> bool {
-	matrix.len() == msize && matrix.iter().all(|row| row.len() == msize)
+fn is_nxn(puzzle: &Puzzle) -> bool {
+	puzzle.n * puzzle.n == puzzle.flat.len()
 }
 
-pub fn check_puzzle(matrix: &Vec<Vec<u16>>, msize: usize) -> bool {
-	let flatten_matrix: Vec<u16> =
-		matrix.iter().flat_map(|row| row.iter()).cloned().collect();
+pub fn check_puzzle(puzzle: &Puzzle) -> bool {
 	let (sorted, inversions) =
-		inversions::merge_count_inversion(&flatten_matrix);
-	is_nxn(matrix, msize)
-		&& is_puzzle(sorted)
-		&& is_solvable(&flatten_matrix, msize, inversions)
+		inversions::merge_count_inversion(&puzzle.flat);
+	is_nxn(puzzle) && is_puzzle(sorted) && is_solvable(&puzzle, inversions)
 }
 
 #[cfg(test)]
@@ -53,10 +50,13 @@ mod tests {
 
 	#[test]
 	fn test_blank_row() {
-		let vec1 = vec![12, 1, 10, 2, 7, 11, 4, 14, 5, 0, 9, 15, 8, 13, 6, 3];
-		let vec2 = vec![12, 1, 10, 2, 7, 0, 4, 14, 5, 11, 9, 15, 8, 13, 6, 3];
+		let vec1 =
+			vec![12, 1, 10, 2, 7, 11, 4, 14, 5, 0, 9, 15, 8, 13, 6, 3];
+		let vec2 =
+			vec![12, 1, 10, 2, 7, 0, 4, 14, 5, 11, 9, 15, 8, 13, 6, 3];
 		let vec3 = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
-		let vec4 = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+		let vec4 =
+			vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 		assert_eq!(get_blank_row_from_bottom(&vec1, 4), 2);
 		assert_eq!(get_blank_row_from_bottom(&vec2, 4), 3);
 		assert_eq!(get_blank_row_from_bottom(&vec3, 3), 3);
@@ -77,7 +77,7 @@ mod tests {
 			vec![9, 10, 11, 12],
 			vec![13, 15, 14, 0],
 		];
-		assert_eq!(check_puzzle(&matrix1, 4), true);
-		assert_eq!(check_puzzle(&matrix2, 4), false);
+		assert_eq!(check_puzzle(&Puzzle::from_matrix(4, matrix1)), true);
+		assert_eq!(check_puzzle(&Puzzle::from_matrix(4, matrix2)), false);
 	}
 }
