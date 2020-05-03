@@ -2,6 +2,7 @@ use std::env;
 use std::error::Error;
 use std::path::Path;
 
+mod a_star;
 mod inversions;
 mod parsing;
 mod puzzle;
