@@ -18,7 +18,7 @@ fn is_even(n: usize) -> bool {
 // [https://www.geeksforgeeks.org/check-instance-15-puzzle-solvable/]
 // [https://www.cs.bham.ac.uk/~mdr/teaching/modules04/java2/TilesSolvability.html]
 //
-// Formula for determining solvability:
+// Formula for solvability:
 // ((grid width is odd) && (# is even)) || ((grid width is even) && ((blank is on odd row from bottom) == (# is even)))
 //
 fn is_solvable(puzzle: &Puzzle, inversions: usize) -> bool {

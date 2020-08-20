@@ -22,12 +22,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 		return Ok(());
 	}
 
-	let path = Path::new(&args[1]);
-	if !path.is_file() {
-		println!("Invalid file");
+	let puzzle_path = Path::new(&args[1]);
+	if !puzzle_path.is_file() {
+		println!("Invalid file, the path is wrong !");
 		return Ok(());
 	}
-	let (msize, matrix) = parsing::parse_puzzle(path)?;
+	let (msize, matrix) = parsing::parse_puzzle(puzzle_path)?;
 
 	let puzzle = Puzzle::from_matrix(msize, matrix);
 	if !validity::check_puzzle(&puzzle) {
