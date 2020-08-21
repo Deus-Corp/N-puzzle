@@ -37,10 +37,11 @@ fn get_heuristic(heuristic: Option<i32>) -> Box<dyn Fn(&Puzzle, &Puzzle) -> u32>
     }
 }
 
-pub fn solve(puzzle: Puzzle) {
-    let goal = Puzzle::new(Kind::Classic, puzzle.n);
+pub fn solve(start: Puzzle) {
+    let goal = Puzzle::new(Kind::Classic, start.n);
     let heuristic = get_heuristic(None);
-    let path = a_star(puzzle, goal, heuristic).unwrap();
+
+    let path = a_star(start, goal, heuristic).unwrap();
 
     for i in (0..path.len()).rev() {
         let node = &path[i];

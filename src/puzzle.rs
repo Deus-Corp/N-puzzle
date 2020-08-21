@@ -19,7 +19,7 @@ pub struct Puzzle {
     pub f: u32,
     pub g: u32,
     pub h: u32,
-    pub previous: Box<Option<Puzzle>>,
+    pub previous: Option<Box<Puzzle>>,
 }
 
 impl Puzzle {
@@ -34,7 +34,7 @@ impl Puzzle {
             f: 0,
             g: 0,
             h: 0,
-            previous: Box::new(None),
+            previous: None,
         }
     }
 
@@ -51,7 +51,7 @@ impl Puzzle {
             f: 0,
             g: 0,
             h: 0,
-            previous: Box::new(None),
+            previous: None,
         }
     }
 
@@ -132,13 +132,13 @@ impl Puzzle {
         new
     }
 
-    pub fn neighbors(&self) -> Vec<Box<Puzzle>> {
+    pub fn neighbors(&self) -> Vec<Puzzle> {
         let mut neighbors = vec![];
         let moves = self.moves();
 
         for i in 0..moves.len() {
             let neighbor = self.new_state(&moves[i]);
-            neighbors.push(Box::new(neighbor));
+            neighbors.push(neighbor);
         }
         neighbors
     }

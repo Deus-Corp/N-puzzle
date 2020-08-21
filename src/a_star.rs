@@ -1,55 +1,49 @@
+use std::collections::BinaryHeap;
 use super::puzzle::Puzzle;
+
+pub fn reverse_path<T>(goal: Puzzle) -> Vec<Puzzle>{
+    unimplemented!();
+    // let mut current = goal;
+    // let path = vec![];
+    // while let Some(parent) = current.parent {
+    //     path.push(*current);
+    //     current = &parent;
+    // }
+    // path
+}
 
 pub fn a_star(
     start: Puzzle,
-    end: Puzzle,
+    goal: Puzzle,
     h: Box<dyn Fn(&Puzzle, &Puzzle) -> u32>,
 ) -> Option<Vec<Puzzle>> {
-    let mut open_set: Vec<Box<Puzzle>> = vec![];
-    let mut closed_set: Vec<Box<Puzzle>> = vec![];
-    open_set.push(Box::new(start));
+    let mut open_list = BinaryHeap::new();
+    let mut closed_set = vec![];
+    open_list.push(start);
 
-    while !open_set.is_empty() {
-        let mut best = 0;
-        for i in 0..open_set.len() {
-            if open_set[i].f < open_set[best].f {
-                best = i;
-            }
-        }
-        let current = open_set.remove(best);
-        if *current == end {
-            let mut path: Vec<Puzzle> = vec![];
-            let mut cur = *current;
-            path.push(cur.clone());
-            while let Some(prev) = *(cur.previous) {
-                path.push(prev.clone());
-                cur = prev;
-            }
+    while let Some(current_node) = open_list.pop() {
+        if current_node == goal {
+            let path = reverse_path(current_node);
             return Some(path);
         }
-        let neighbors = current.neighbors();
-        for mut neighbor in neighbors {
-            if !closed_set.contains(&neighbor) {
-                let g = current.g + 1;
-                if open_set.contains(&neighbor) {
-                    if g < neighbor.g {
-                        neighbor.g = g;
-                        neighbor.h = h(&neighbor, &end);
-                        neighbor.f = neighbor.g + neighbor.h;
-                        neighbor.previous =
-                            Box::new(Some((*current).clone()));
-                    }
-                } else {
-                    neighbor.g = g;
-                    neighbor.h = h(&neighbor, &end);
-                    neighbor.f = neighbor.g + neighbor.h;
-                    neighbor.previous = Box::new(Some((*current).clone()));
-                    open_set.push(neighbor.clone());
-                }
+        closed_set.push(current_node);
+        let successors = current_node.neighbors();
+        for successor in successors {
+            if closed_set.contains(&successor) {
+                continue;
+            }
+            let tentative_g = current_node.g + 1;
+            let is_open_listed = open_list.contains(successor);
+            if  is_open_listed && tentative_g >= successor.g {
+                continue;
+            }
+            successor.previous = Some(Box::new(current_node));
+            successor.g = tentative_g;
+            successor.f = tentative_g + h(&successor, &goal);
+            if !is_open_listed {
+                open_list.push(successor);
             }
         }
-
-        closed_set.push(current);
     }
     None
 }
