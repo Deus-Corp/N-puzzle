@@ -12,14 +12,14 @@ pub enum Move {
     RIGHT,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub struct Puzzle {
     pub n: usize,
     pub flat: Vec<u16>,
-    pub f: u32,
-    pub g: u32,
-    pub h: u32,
-    pub previous: Option<Box<Puzzle>>,
+    // pub f: u32,
+    // pub g: u32,
+    // pub h: u32,
+    // pub previous: Option<Box<Puzzle>>,
 }
 
 impl Puzzle {
@@ -31,10 +31,6 @@ impl Puzzle {
                 .flat_map(|row| row.iter())
                 .cloned()
                 .collect(),
-            f: 0,
-            g: 0,
-            h: 0,
-            previous: None,
         }
     }
 
@@ -48,10 +44,6 @@ impl Puzzle {
         Puzzle {
             n,
             flat,
-            f: 0,
-            g: 0,
-            h: 0,
-            previous: None,
         }
     }
 
@@ -162,25 +154,3 @@ impl fmt::Debug for Puzzle {
         Ok(())
     }
 }
-
-use std::cmp::Ordering;
-
-impl Ord for Puzzle {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.flat.cmp(&other.flat)
-    }
-}
-
-impl PartialOrd for Puzzle {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl PartialEq for Puzzle {
-    fn eq(&self, other: &Self) -> bool {
-        self.flat == other.flat
-    }
-}
-
-impl Eq for Puzzle {}

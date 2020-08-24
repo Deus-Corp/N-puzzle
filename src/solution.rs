@@ -41,12 +41,18 @@ pub fn solve(start: Puzzle) {
     let goal = Puzzle::new(Kind::Classic, start.n);
     let heuristic = get_heuristic(None);
 
-    let path = a_star(start, goal, heuristic).unwrap();
+    let path = a_star(start, goal, heuristic);
 
-    for i in (0..path.len()).rev() {
-        let node = &path[i];
-        println!("{:?}", node);
+    match path {
+        Some(p) => {
+            for i in 0..p.len() {
+                let node = &p[i];
+                println!("{:?}", node);
+            }
+            println!("Moves: {}", p.len() - 1);
+            println!("End");
+        }
+        None => println!("No solution")
     }
-    println!("Moves: {}", path.len() - 1);
-    println!("End");
+
 }
