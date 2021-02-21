@@ -11,7 +11,7 @@ fn misplaced_tiles(p1: &Puzzle, p2: &Puzzle) -> u32 {
     misplaced
 }
 
-fn get_heuristic() -> Box<dyn Fn(&Puzzle, &Puzzle) -> u32> {
+fn get_heuristic_function() -> Box<dyn Fn(&Puzzle, &Puzzle) -> u32> {
     match 1 {
         _ => Box::new(misplaced_tiles),
     }
@@ -19,8 +19,8 @@ fn get_heuristic() -> Box<dyn Fn(&Puzzle, &Puzzle) -> u32> {
 
 pub fn solve(puzzle: Puzzle) {
     let goal = Puzzle::new(Kind::Classic, puzzle.n);
-    let heuristic = get_heuristic();
-    let path = a_star(puzzle, goal, heuristic).unwrap();
+    let heuristic_function = get_heuristic_function();
+    let path = a_star(puzzle, goal, heuristic_function).unwrap();
 
     for i in (0..path.len()).rev() {
         let node = &path[i];
