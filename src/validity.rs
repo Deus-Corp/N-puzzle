@@ -1,14 +1,8 @@
 use super::inversions;
 use super::puzzle::Puzzle;
 
-fn get_blank_index(arr: &Vec<u16>) -> usize {
-	arr.iter()
-		.position(|&n| n == 0)
-		.expect("No blank, invalid puzzle !")
-}
-
 fn get_blank_row_from_bottom(mflat: &Vec<u16>, msize: usize) -> usize {
-	msize - get_blank_index(mflat) / msize
+	msize - Puzzle::get_blank_index(mflat) / msize
 }
 
 fn is_even(n: usize) -> bool {
@@ -18,7 +12,7 @@ fn is_even(n: usize) -> bool {
 // [https://www.geeksforgeeks.org/check-instance-15-puzzle-solvable/]
 // [https://www.cs.bham.ac.uk/~mdr/teaching/modules04/java2/TilesSolvability.html]
 //
-// Formula for determining solvability:
+// Formula for solvability:
 // ((grid width is odd) && (# is even)) || ((grid width is even) && ((blank is on odd row from bottom) == (# is even)))
 //
 fn is_solvable(puzzle: &Puzzle, inversions: usize) -> bool {
@@ -31,7 +25,7 @@ fn is_solvable(puzzle: &Puzzle, inversions: usize) -> bool {
 }
 
 fn is_puzzle(sorted: Vec<u16>) -> bool {
-	sorted.windows(2).all(|w| w[0] <= w[1])
+	sorted.windows(2).all(|w| w[0] + 1 == w[1])
 }
 
 fn is_nxn(puzzle: &Puzzle) -> bool {

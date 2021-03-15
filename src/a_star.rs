@@ -1,55 +1,73 @@
+use std::collections::{BinaryHeap, HashMap};
 use super::puzzle::Puzzle;
+
+pub fn reconstruct_path(came_from: HashMap<Puzzle, Puzzle>, current: Puzzle) -> Vec<Puzzle>{
+    let mut path = vec![];
+    path.push(current.clone());
+
+    let mut iter = &current;
+    while came_from.contains_key(iter) {
+        iter = &came_from[iter];
+        path.push(iter.clone());
+    }
+    path.reverse();
+    path
+}
 
 pub fn a_star(
     start: Puzzle,
-    end: Puzzle,
+    goal: Puzzle,
     h: Box<dyn Fn(&Puzzle, &Puzzle) -> u32>,
 ) -> Option<Vec<Puzzle>> {
-    let mut open_set: Vec<Box<Puzzle>> = vec![];
-    let mut closed_set: Vec<Box<Puzzle>> = vec![];
-    open_set.push(Box::new(start));
+    let mut open_list = BinaryHeap::new();
+    let mut closed_set = vec![];
+    let mut came_from = HashMap::new();
+    open_list.push(Score {
+        puzzle: start.clone(),
+        g: 0,
+        f: h(&start, &goal)
+    });
 
-    while !open_set.is_empty() {
-        let mut best = 0;
-        for i in 0..open_set.len() {
-            if open_set[i].f < open_set[best].f {
-                best = i;
-            }
-        }
-        let current = open_set.remove(best);
-        if *current == end {
-            let mut path: Vec<Puzzle> = vec![];
-            let mut cur = *current;
-            path.push(cur.clone());
-            while let Some(prev) = *(cur.previous) {
-                path.push(prev.clone());
-                cur = prev;
-            }
+    while let Some(current) = open_list.pop() {
+        if current.puzzle == goal {
+            let path = reconstruct_path(came_from, current.puzzle);
             return Some(path);
         }
-        let neighbors = current.neighbors();
-        for mut neighbor in neighbors {
-            if !closed_set.contains(&neighbor) {
-                let g = current.g + 1;
-                if open_set.contains(&neighbor) {
-                    if g < neighbor.g {
-                        neighbor.g = g;
-                        neighbor.h = h(&neighbor, &end);
-                        neighbor.f = neighbor.g + neighbor.h;
-                        neighbor.previous =
-                            Box::new(Some((*current).clone()));
-                    }
-                } else {
-                    neighbor.g = g;
-                    neighbor.h = h(&neighbor, &end);
-                    neighbor.f = neighbor.g + neighbor.h;
-                    neighbor.previous = Box::new(Some((*current).clone()));
-                    open_set.push(neighbor.clone());
-                }
+        closed_set.push(current.puzzle.clone());
+        for neighbor in current.puzzle.neighbors() {
+            if closed_set.contains(&neighbor) {
+                continue;
             }
+            came_from.insert(neighbor.clone(), current.puzzle.clone());
+            let g = current.g + 1;
+            let f = g + h(&neighbor, &goal);
+            open_list.push(Score {
+                puzzle: neighbor,
+                f,
+                g
+            });
         }
-
-        closed_set.push(current);
     }
     None
+}
+
+#[derive(PartialEq, Eq)]
+struct Score {
+    puzzle: Puzzle,
+    g: u32,
+    f: u32,
+}
+
+use std::cmp::Ordering;
+
+impl Ord for Score {
+    fn cmp(&self, other: &Self) -> Ordering {
+        other.f.cmp(&self.f)
+    }
+}
+
+impl PartialOrd for Score {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
 }
