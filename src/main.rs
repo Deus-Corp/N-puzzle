@@ -3,7 +3,9 @@ use std::error::Error;
 use std::path::Path;
 
 mod a_star;
+mod generate;
 mod inversions;
+mod moves;
 mod parsing;
 mod puzzle;
 mod solution;

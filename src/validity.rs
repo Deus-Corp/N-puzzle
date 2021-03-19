@@ -2,7 +2,7 @@ use super::inversions;
 use super::puzzle::Puzzle;
 
 fn get_blank_row_from_bottom(mflat: &Vec<u16>, msize: usize) -> usize {
-	msize - Puzzle::get_blank_index(mflat) / msize
+	msize - Puzzle::get_index_of(mflat, 0) / msize
 }
 
 fn is_even(n: usize) -> bool {

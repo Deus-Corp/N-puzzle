@@ -1,7 +1,12 @@
-use std::collections::{BinaryHeap, HashMap};
 use super::puzzle::Puzzle;
+use std::collections::{BinaryHeap, HashMap};
 
-pub fn reconstruct_path(came_from: HashMap<Puzzle, Puzzle>, current: Puzzle) -> Vec<Puzzle>{
+const TRANSITION_COST: u32 = 1;
+
+pub fn reconstruct_path(
+    came_from: HashMap<Puzzle, Puzzle>,
+    current: Puzzle,
+) -> Vec<Puzzle> {
     let mut path = vec![];
     path.push(current.clone());
 
@@ -14,6 +19,8 @@ pub fn reconstruct_path(came_from: HashMap<Puzzle, Puzzle>, current: Puzzle) -> 
     path
 }
 
+// [https://github.com/samueltardieu/pathfinding/blob/main/src/directed/astar.rs]
+//
 pub fn a_star(
     start: Puzzle,
     goal: Puzzle,
@@ -25,7 +32,7 @@ pub fn a_star(
     open_list.push(Score {
         puzzle: start.clone(),
         g: 0,
-        f: h(&start, &goal)
+        f: h(&start, &goal),
     });
 
     while let Some(current) = open_list.pop() {
@@ -39,12 +46,12 @@ pub fn a_star(
                 continue;
             }
             came_from.insert(neighbor.clone(), current.puzzle.clone());
-            let g = current.g + 1;
+            let g = current.g + TRANSITION_COST;
             let f = g + h(&neighbor, &goal);
             open_list.push(Score {
                 puzzle: neighbor,
                 f,
-                g
+                g,
             });
         }
     }

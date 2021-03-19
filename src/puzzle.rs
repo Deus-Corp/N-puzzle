@@ -1,3 +1,6 @@
+use super::generate;
+use super::moves::Move;
+
 pub type Matrix = Vec<Vec<u16>>;
 
 pub enum Kind {
@@ -5,35 +8,24 @@ pub enum Kind {
     _Snail,
 }
 
-pub enum Move {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT,
-}
-
 #[derive(Clone, Hash, PartialEq, Eq)]
 pub struct Puzzle {
     pub n: usize,
     pub flat: Vec<u16>,
-    blank: usize,
-    // pub f: u32,
-    // pub g: u32,
-    // pub h: u32,
-    // pub previous: Option<Box<Puzzle>>,
+    pub blank: usize,
 }
 
 impl Puzzle {
-    pub fn get_blank_index(flat: &Vec<u16>) -> usize {
+    pub fn get_index_of(flat: &Vec<u16>, tile: u16) -> usize {
         flat.iter()
-            .position(|&n| n == 0)
+            .position(|&n| n == tile)
             .expect("No blank, invalid puzzle !")
     }
 
     pub fn from_matrix(msize: usize, matrix: Matrix) -> Puzzle {
         let flat =
             matrix.iter().flat_map(|row| row.iter()).cloned().collect();
-        let blank = Puzzle::get_blank_index(&flat);
+        let blank = Puzzle::get_index_of(&flat, 0);
 
         Puzzle {
             n: msize,
@@ -42,98 +34,29 @@ impl Puzzle {
         }
     }
 
-    fn new_classic(n: usize) -> Puzzle {
-        let flat_len = n * n;
-        let mut flat = Vec::with_capacity(flat_len);
-        for i in 0..flat_len as u16 {
-            flat.push(i + 1);
-        }
-        flat[flat_len - 1] = 0;
-        Puzzle {
-            n,
-            flat,
-            blank: flat_len - 1,
-        }
-    }
-
     pub fn new(kind: Kind, size: usize) -> Puzzle {
         match kind {
-            Kind::Classic => Puzzle::new_classic(size),
-            _ => unimplemented!(),
+            Kind::Classic => generate::new_classic(size),
+            Kind::_Snail => generate::new_snail(size),
         }
-    }
-
-    fn moves(&self) -> Vec<Move> {
-        let row = self.blank / self.n + 1;
-        let column = self.blank % self.n + 1;
-
-        let mut moves = vec![];
-        // can't move up
-        if !(row == 1) {
-            moves.push(Move::UP);
-        }
-        // can't move down
-        if !(row == self.n) {
-            moves.push(Move::DOWN);
-        }
-        // can't move left
-        if !(column == 1) {
-            moves.push(Move::LEFT);
-        }
-        // can't move right
-        if !(column == self.n) {
-            moves.push(Move::RIGHT);
-        }
-        moves
-    }
-
-    // can replace by map with key as enum and value as offset
-    fn swap_up(&mut self) {
-        let up = self.blank - self.n;
-        self.flat.swap(self.blank, up);
-        self.blank = up;
-    }
-
-    fn swap_down(&mut self) {
-        let down = self.blank + self.n;
-        self.flat.swap(self.blank, down);
-        self.blank = down;
-    }
-
-    fn swap_left(&mut self) {
-        let left = self.blank - 1;
-        self.flat.swap(self.blank, left);
-        self.blank = left;
-    }
-
-    fn swap_right(&mut self) {
-        let right = self.blank + 1;
-        self.flat.swap(self.blank, right);
-        self.blank = right;
-    }
-
-    fn new_state(&self, m: &Move) -> Puzzle {
-        let mut new = self.clone();
-
-        match m {
-            Move::UP => new.swap_up(),
-            Move::DOWN => new.swap_down(),
-            Move::LEFT => new.swap_left(),
-            Move::RIGHT => new.swap_right(),
-        };
-
-        new
     }
 
     pub fn neighbors(&self) -> Vec<Puzzle> {
         let mut neighbors = vec![];
-        let moves = self.moves();
+        let moves = Move::moves(self);
 
         for i in 0..moves.len() {
             let neighbor = self.new_state(&moves[i]);
             neighbors.push(neighbor);
         }
         neighbors
+    }
+
+    fn new_state(&self, m: &Move) -> Puzzle {
+        let mut new = self.clone();
+
+        Move::apply(&mut new, m);
+        new
     }
 }
 

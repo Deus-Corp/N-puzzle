@@ -12,7 +12,7 @@ fn misplaced_tiles(p1: &Puzzle, p2: &Puzzle) -> u32 {
 }
 
 // working only for idx + 1 (on flat) puzzle goal
-fn manhattan_ditance(p1: &Puzzle, _p2: &Puzzle) -> u32 {
+fn manhattan_distance(p1: &Puzzle, _p2: &Puzzle) -> u32 {
     let mut distance: u32 = 0;
     for i in 0..p1.flat.len() {
         if p1.flat[i] == 0 {
@@ -32,9 +32,10 @@ fn manhattan_ditance(p1: &Puzzle, _p2: &Puzzle) -> u32 {
 fn get_heuristic(
     heuristic: Option<i32>,
 ) -> Box<dyn Fn(&Puzzle, &Puzzle) -> u32> {
-    let opt = heuristic.unwrap_or(1);
+    let opt = heuristic.unwrap_or(2);
     match opt {
-        1 => Box::new(manhattan_ditance),
+        1 => Box::new(manhattan_distance),
+        2 => Box::new(misplaced_tiles),
         _ => Box::new(misplaced_tiles),
     }
 }
