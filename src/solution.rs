@@ -1,5 +1,5 @@
 use super::a_star::a_star;
-use super::puzzle::{Kind, Puzzle};
+use super::puzzle::Puzzle;
 
 fn misplaced_tiles(p1: &Puzzle, p2: &Puzzle) -> u32 {
     let mut misplaced = 0;
@@ -34,17 +34,16 @@ fn get_heuristic(
 ) -> Box<dyn Fn(&Puzzle, &Puzzle) -> u32> {
     let opt = heuristic.unwrap_or(2);
     match opt {
-        1 => Box::new(manhattan_distance),
-        2 => Box::new(misplaced_tiles),
+        1 => Box::new(misplaced_tiles),
+        2 => Box::new(manhattan_distance),
         _ => Box::new(misplaced_tiles),
     }
 }
 
-pub fn solve(start: Puzzle) {
-    let goal = Puzzle::new(Kind::Classic, start.n);
+pub fn solve(start: Puzzle, end: Puzzle) {
     let heuristic = get_heuristic(None);
 
-    let path = a_star(start, goal, heuristic);
+    let path = a_star(start, end, heuristic);
 
     match path {
         Some(p) => {

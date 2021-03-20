@@ -1,9 +1,9 @@
+use super::moves::Move;
 use super::puzzle::Puzzle;
 
 fn generate_classic(n: usize) -> Vec<u16> {
     let flat_len = n * n;
     let mut flat = Vec::with_capacity(flat_len);
-
     for i in 0..flat_len as u16 {
         flat.push(i + 1);
     }
@@ -14,7 +14,6 @@ pub fn new_classic(n: usize) -> Puzzle {
     let mut flat = generate_classic(n);
     let blank = flat.len() - 1;
     flat[blank] = 0;
-
     Puzzle { n, flat, blank }
 }
 
@@ -27,26 +26,22 @@ fn generate_snail(n: usize) -> Vec<u16> {
     let mut end_row = n;
     let mut end_col = n;
     let mut nb = 1;
-
     while start_row < end_row && start_col < end_col {
         for i in start_col..end_col {
             flat[start_row * n + i] = nb;
             nb += 1;
         }
         start_row += 1;
-
         for i in start_row..end_row {
             flat[i * n + end_col - 1] = nb;
             nb += 1;
         }
         end_col -= 1;
-
         for i in (start_col..end_col).rev() {
             flat[(end_row - 1) * n + i] = nb;
             nb += 1;
         }
         end_row -= 1;
-
         for i in (start_row..end_row).rev() {
             flat[i * n + start_col] = nb;
             nb += 1;
@@ -60,8 +55,19 @@ pub fn new_snail(n: usize) -> Puzzle {
     let mut flat = generate_snail(n);
     let blank = Puzzle::get_index_of(&flat, (n * n) as u16);
     flat[blank] = 0;
-
     Puzzle { n, flat, blank }
+}
+
+use rand::Rng;
+
+pub fn generate_randomized(puzzle: &mut Puzzle, iterations: usize) {
+    let mut rng = rand::thread_rng();
+    for _ in 0..iterations {
+        let moves = Move::moves(puzzle);
+        let rand = rng.gen::<u8>() % moves.len() as u8;
+
+        Move::apply(puzzle, &moves[rand as usize]);
+    }
 }
 
 #[cfg(test)]

@@ -23,7 +23,7 @@ pub fn reconstruct_path(
 //
 pub fn a_star(
     start: Puzzle,
-    goal: Puzzle,
+    end: Puzzle,
     h: Box<dyn Fn(&Puzzle, &Puzzle) -> u32>,
 ) -> Option<Vec<Puzzle>> {
     let mut open_list = BinaryHeap::new();
@@ -32,11 +32,11 @@ pub fn a_star(
     open_list.push(Score {
         puzzle: start.clone(),
         g: 0,
-        f: h(&start, &goal),
+        f: h(&start, &end),
     });
 
     while let Some(current) = open_list.pop() {
-        if current.puzzle == goal {
+        if current.puzzle == end {
             let path = reconstruct_path(came_from, current.puzzle);
             return Some(path);
         }
@@ -47,7 +47,7 @@ pub fn a_star(
             }
             came_from.insert(neighbor.clone(), current.puzzle.clone());
             let g = current.g + TRANSITION_COST;
-            let f = g + h(&neighbor, &goal);
+            let f = g + h(&neighbor, &end);
             open_list.push(Score {
                 puzzle: neighbor,
                 f,

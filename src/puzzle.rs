@@ -34,11 +34,17 @@ impl Puzzle {
         }
     }
 
-    pub fn new(kind: Kind, size: usize) -> Puzzle {
+    pub fn new(kind: &Kind, size: usize) -> Puzzle {
         match kind {
             Kind::Classic => generate::new_classic(size),
             Kind::_Snail => generate::new_snail(size),
         }
+    }
+
+    pub fn new_randomized(kind: &Kind, size: usize) -> Puzzle {
+        let mut puzzle = Puzzle::new(kind, size);
+        generate::generate_randomized(&mut puzzle, 1000);
+        puzzle
     }
 
     pub fn neighbors(&self) -> Vec<Puzzle> {
@@ -123,7 +129,7 @@ mod tests {
     #[test]
     fn test_new_classic() {
         assert_eq!(
-            Puzzle::new(Kind::Classic, 3),
+            Puzzle::new(&Kind::Classic, 3),
             Puzzle {
                 n: 3,
                 flat: vec![1, 2, 3, 4, 5, 6, 7, 8, 0],
@@ -132,7 +138,7 @@ mod tests {
         );
 
         assert_eq!(
-            Puzzle::new(Kind::Classic, 4),
+            Puzzle::new(&Kind::Classic, 4),
             Puzzle {
                 n: 4,
                 flat: vec![
@@ -143,7 +149,7 @@ mod tests {
         );
 
         assert_eq!(
-            Puzzle::new(Kind::Classic, 5),
+            Puzzle::new(&Kind::Classic, 5),
             Puzzle {
                 n: 5,
                 flat: vec![
