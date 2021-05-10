@@ -42,7 +42,6 @@ fn get_heuristic(
 
 pub fn solve(start: Puzzle, end: Puzzle) {
     let heuristic = get_heuristic(None);
-
     let path = a_star(start, end, heuristic);
 
     match path {

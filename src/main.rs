@@ -54,15 +54,17 @@ fn clap_your_hands() -> Sia {
 		);
 
 	let matches = clap_app.get_matches();
-	let input_file = matches.value_of("file");
-	let input_kind = matches.value_of("kind").unwrap_or("3");
-	let input_size = matches.value_of("size").unwrap_or("classic");
 
+	let input_file = matches.value_of("file");
 	let file = input_file.map(|f| f.to_string());
+
+	let input_kind = matches.value_of("kind").unwrap_or("3");
 	let kind = match input_kind {
 		"SNAIL" | "snail" => Kind::_Snail,
 		_ => Kind::Classic,
 	};
+
+	let input_size = matches.value_of("size").unwrap_or("classic");
 	let size = match input_size.parse() {
 		Ok(s) => s,
 		_ => 3,

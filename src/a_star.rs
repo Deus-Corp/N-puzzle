@@ -27,17 +27,27 @@ pub fn a_star(
     h: Box<dyn Fn(&Puzzle, &Puzzle) -> u32>,
 ) -> Option<Vec<Puzzle>> {
     let mut open_list = BinaryHeap::new();
-    let mut closed_set = vec![];
     let mut came_from = HashMap::new();
+    let mut closed_set = vec![];
+
     open_list.push(Score {
         puzzle: start.clone(),
         g: 0,
         f: h(&start, &end),
     });
+    let mut total_opened = 1;
+    let mut max_states = 1;
 
     while let Some(current) = open_list.pop() {
         if current.puzzle == end {
             let path = reconstruct_path(came_from, current.puzzle);
+            println!(
+                "Total Opened: {} {}; Max states: {} {}",
+                total_opened,
+                open_list.len() + closed_set.len() + 1,
+                max_states,
+                open_list.len() + 1,
+            );
             return Some(path);
         }
         closed_set.push(current.puzzle.clone());
@@ -53,6 +63,11 @@ pub fn a_star(
                 f,
                 g,
             });
+            total_opened += 1;
+
+            if max_states < open_list.len() {
+                max_states = open_list.len();
+            }
         }
     }
     None
