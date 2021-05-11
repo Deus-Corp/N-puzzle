@@ -1,4 +1,5 @@
 use super::puzzle::Puzzle;
+use super::solution::Solution;
 use std::collections::{BinaryHeap, HashMap};
 
 const TRANSITION_COST: u32 = 1;
@@ -25,7 +26,7 @@ pub fn a_star(
     start: Puzzle,
     end: Puzzle,
     h: Box<dyn Fn(&Puzzle, &Puzzle) -> u32>,
-) -> Option<Vec<Puzzle>> {
+) -> Option<Solution> {
     let mut open_list = BinaryHeap::new();
     let mut came_from = HashMap::new();
     let mut closed_set = vec![];
@@ -42,13 +43,17 @@ pub fn a_star(
         if current.puzzle == end {
             let path = reconstruct_path(came_from, current.puzzle);
             println!(
-                "Total Opened: {} {}; Max states: {} {}",
+                "DEBUG Total Opened: {} {}; Max states: {} {}",
                 total_opened,
                 open_list.len() + closed_set.len() + 1,
                 max_states,
                 open_list.len() + 1,
             );
-            return Some(path);
+            return Some(Solution {
+                total_opened,
+                max_states,
+                path,
+            });
         }
         closed_set.push(current.puzzle.clone());
         for neighbor in current.puzzle.neighbors() {

@@ -1,6 +1,34 @@
 use super::a_star::a_star;
 use super::puzzle::Puzzle;
 
+pub struct Solution {
+    pub total_opened: usize,
+    pub max_states: usize,
+    pub path: Vec<Puzzle>,
+}
+
+use std::fmt;
+
+impl fmt::Display for Solution {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Solution:")?;
+        for puzzle in &self.path {
+            for chunk in puzzle.flat.chunks(puzzle.n) {
+                writeln!(f, "{:?}", chunk)?;
+            }
+            writeln!(f, "")?;
+        }
+        writeln!(f, "Total opened: {}", self.total_opened)?;
+        writeln!(f, "Max states: {}", self.max_states)?;
+        writeln!(f, "Number of moves: {}", self.path.len() - 1)?;
+        Ok(())
+    }
+}
+
+fn zero(_p1: &Puzzle, _p2: &Puzzle) -> u32 {
+    0
+}
+
 fn misplaced_tiles(p1: &Puzzle, p2: &Puzzle) -> u32 {
     let mut misplaced = 0;
     for i in 0..p1.flat.len() {
@@ -34,25 +62,19 @@ fn get_heuristic(
 ) -> Box<dyn Fn(&Puzzle, &Puzzle) -> u32> {
     let opt = heuristic.unwrap_or(2);
     match opt {
+        0 => Box::new(zero),
         1 => Box::new(misplaced_tiles),
         2 => Box::new(manhattan_distance),
-        _ => Box::new(misplaced_tiles),
+        _ => Box::new(manhattan_distance),
     }
 }
 
 pub fn solve(start: Puzzle, end: Puzzle) {
     let heuristic = get_heuristic(None);
-    let path = a_star(start, end, heuristic);
+    let solution = a_star(start, end, heuristic);
 
-    match path {
-        Some(p) => {
-            for i in 0..p.len() {
-                let node = &p[i];
-                println!("{:?}", node);
-            }
-            println!("Moves: {}", p.len() - 1);
-            println!("End");
-        }
-        None => println!("No solution"),
+    match solution {
+        Some(s) => print!("{}", s),
+        None => println!("No solution !"),
     }
 }
