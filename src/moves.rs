@@ -1,10 +1,10 @@
 use super::puzzle::Puzzle;
 
 pub enum Move {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT,
+    Up,
+    Down,
+    Left,
+    Right,
 }
 
 impl Move {
@@ -14,54 +14,34 @@ impl Move {
         let mut moves = vec![];
         // can't move up
         if !(row == 1) {
-            moves.push(Move::UP);
+            moves.push(Move::Up);
         }
         // can't move down
         if !(row == puzzle.n) {
-            moves.push(Move::DOWN);
+            moves.push(Move::Down);
         }
         // can't move left
         if !(column == 1) {
-            moves.push(Move::LEFT);
+            moves.push(Move::Left);
         }
         // can't move right
         if !(column == puzzle.n) {
-            moves.push(Move::RIGHT);
+            moves.push(Move::Right);
         }
         moves
     }
 
-    pub fn apply(puzzle: &mut Puzzle, m: &Move) {
-        match m {
-            Move::UP => Move::swap_up(puzzle),
-            Move::DOWN => Move::swap_down(puzzle),
-            Move::LEFT => Move::swap_left(puzzle),
-            Move::RIGHT => Move::swap_right(puzzle),
+    pub fn apply(&self, puzzle: &mut Puzzle) {
+        let swap_blank = |puzzle: &mut Puzzle, idx: usize| {
+            puzzle.flat.swap(puzzle.blank, idx);
+            puzzle.blank = idx;
         };
-    }
 
-    // can replace by map with key as enum and value as offset
-    fn swap_up(puzzle: &mut Puzzle) {
-        let up = puzzle.blank - puzzle.n;
-        puzzle.flat.swap(puzzle.blank, up);
-        puzzle.blank = up;
-    }
-
-    fn swap_down(puzzle: &mut Puzzle) {
-        let down = puzzle.blank + puzzle.n;
-        puzzle.flat.swap(puzzle.blank, down);
-        puzzle.blank = down;
-    }
-
-    fn swap_left(puzzle: &mut Puzzle) {
-        let left = puzzle.blank - 1;
-        puzzle.flat.swap(puzzle.blank, left);
-        puzzle.blank = left;
-    }
-
-    fn swap_right(puzzle: &mut Puzzle) {
-        let right = puzzle.blank + 1;
-        puzzle.flat.swap(puzzle.blank, right);
-        puzzle.blank = right;
+        match self {
+            Move::Up => swap_blank(puzzle, puzzle.blank - puzzle.n),
+            Move::Down => swap_blank(puzzle, puzzle.blank + puzzle.n),
+            Move::Left => swap_blank(puzzle, puzzle.blank - 1),
+            Move::Right => swap_blank(puzzle, puzzle.blank + 1),
+        };
     }
 }

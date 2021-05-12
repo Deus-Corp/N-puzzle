@@ -36,23 +36,13 @@ pub fn a_star(
         g: 0,
         f: h(&start, &end),
     });
-    let mut total_opened = 1;
-    let mut max_states = 1;
 
     while let Some(current) = open_list.pop() {
         if current.puzzle == end {
-            let path = reconstruct_path(came_from, current.puzzle);
-            println!(
-                "DEBUG Total Opened: {} {}; Max states: {} {}",
-                total_opened,
-                open_list.len() + closed_set.len() + 1,
-                max_states,
-                open_list.len() + 1,
-            );
             return Some(Solution {
-                total_opened,
-                max_states,
-                path,
+                path: reconstruct_path(came_from, current.puzzle),
+                total_opened: open_list.len() + closed_set.len() + 1,
+                max_states: open_list.len() + 1,
             });
         }
         closed_set.push(current.puzzle.clone());
@@ -65,14 +55,9 @@ pub fn a_star(
             let f = g + h(&neighbor, &end);
             open_list.push(Score {
                 puzzle: neighbor,
-                f,
                 g,
+                f,
             });
-            total_opened += 1;
-
-            if max_states < open_list.len() {
-                max_states = open_list.len();
-            }
         }
     }
     None

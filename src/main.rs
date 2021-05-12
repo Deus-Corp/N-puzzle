@@ -6,6 +6,7 @@ use std::path::Path;
 
 mod a_star;
 mod generate;
+mod heuristic;
 mod inversions;
 mod moves;
 mod parsing;
@@ -58,13 +59,13 @@ fn clap_your_hands() -> Sia {
 	let input_file = matches.value_of("file");
 	let file = input_file.map(|f| f.to_string());
 
-	let input_kind = matches.value_of("kind").unwrap_or("3");
+	let input_kind = matches.value_of("kind").unwrap_or("classic");
 	let kind = match input_kind {
 		"SNAIL" | "snail" => Kind::_Snail,
 		_ => Kind::Classic,
 	};
 
-	let input_size = matches.value_of("size").unwrap_or("classic");
+	let input_size = matches.value_of("size").unwrap_or("3");
 	let size = match input_size.parse() {
 		Ok(s) => s,
 		_ => 3,
@@ -99,5 +100,5 @@ fn main() {
 	if let Ok(puzzle) = get_puzzle(&args) {
 		let goal = Puzzle::new(&args.kind, puzzle.n);
 		solution::solve(puzzle, goal);
-	};
+	}
 }

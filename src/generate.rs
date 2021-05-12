@@ -66,7 +66,7 @@ pub fn generate_randomized(puzzle: &mut Puzzle, iterations: usize) {
         let moves = Move::moves(puzzle);
         let rand = rng.gen::<u8>() % moves.len() as u8;
 
-        Move::apply(puzzle, &moves[rand as usize]);
+        moves[rand as usize].apply(puzzle);
     }
 }
 

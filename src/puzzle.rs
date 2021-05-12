@@ -61,7 +61,7 @@ impl Puzzle {
     fn new_state(&self, m: &Move) -> Puzzle {
         let mut new = self.clone();
 
-        Move::apply(&mut new, m);
+        m.apply(&mut new);
         new
     }
 }
