@@ -14,14 +14,14 @@ mod puzzle;
 mod solution;
 mod validity;
 
-use puzzle::{Kind, Puzzle};
+use puzzle::{Difficulty, Kind, Puzzle};
 
 struct Sia {
 	pub file: Option<String>,
 	pub kind: Kind,
 	pub size: usize,
 	//heuristic
-	//difficulty
+	pub difficulty: Difficulty,
 	//algo
 }
 
@@ -43,7 +43,7 @@ fn clap_your_hands() -> Sia {
 				.long("kind")
 				.takes_value(true)
 				.value_name("CLASSIC|SNAIL")
-				.help("Kind of puzzle goal")
+				.help("Kind of the puzzle goal")
 		)
 		.arg(
 			Arg::with_name("size")
@@ -51,27 +51,57 @@ fn clap_your_hands() -> Sia {
 				.long("size")
 				.takes_value(true)
 				.value_name("NUMBER")
-				.help("The N in question")
+				.help("The N we talk about")
+		)
+		.arg(
+			Arg::with_name("difficulty")
+				.short("d")
+				.long("difficulty")
+				.takes_value(true)
+				.value_name("EASY|MEDIUM|HARD")
+				.help("This is how much randomized puzzle will be")
 		);
 
 	let matches = clap_app.get_matches();
 
+	/* file option										*/
 	let input_file = matches.value_of("file");
 	let file = input_file.map(|f| f.to_string());
+	/*													*/
 
+	/* kind option										*/
 	let input_kind = matches.value_of("kind").unwrap_or("classic");
 	let kind = match input_kind {
 		"SNAIL" | "snail" => Kind::_Snail,
 		_ => Kind::Classic,
 	};
+	/*													*/
 
+	/* size option										*/
 	let input_size = matches.value_of("size").unwrap_or("3");
 	let size = match input_size.parse() {
 		Ok(s) => s,
 		_ => 3,
 	};
+	/*													*/
 
-	Sia { file, kind, size }
+	/* difficulty option								*/
+	let input_difficulty =
+		matches.value_of("difficulty").unwrap_or("EASY");
+	let difficulty = match input_difficulty {
+		"EASY" | "easy" => Difficulty::Easy,
+		"MEDIUM" | "medium" => Difficulty::Medium,
+		"HIGH" | "high" => Difficulty::Hard,
+		_ => Difficulty::Easy,
+	};
+	/*													*/
+
+	Sia {
+		file,
+		kind,
+		size,
+		difficulty,
+	}
 }
 
 fn get_puzzle(args: &Sia) -> Result<Puzzle, Box<dyn Error>> {
@@ -90,7 +120,8 @@ fn get_puzzle(args: &Sia) -> Result<Puzzle, Box<dyn Error>> {
 		return Ok(custom_puzzle);
 	}
 
-	let random_puzzle = Puzzle::new_randomized(&args.kind, args.size);
+	let random_puzzle =
+		Puzzle::new_randomized(&args.kind, args.difficulty, args.size);
 	Ok(random_puzzle)
 }
 

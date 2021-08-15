@@ -6,6 +6,14 @@ pub type Matrix = Vec<Vec<u16>>;
 pub enum Kind {
     Classic,
     _Snail,
+    _Reverse,
+}
+
+#[derive(Clone, Copy)]
+pub enum Difficulty {
+    Easy,
+    Medium,
+    Hard,
 }
 
 #[derive(Clone, Hash, PartialEq, Eq)]
@@ -38,12 +46,22 @@ impl Puzzle {
         match kind {
             Kind::Classic => generate::new_classic(size),
             Kind::_Snail => generate::new_snail(size),
+            Kind::_Reverse => unimplemented!(),
         }
     }
 
-    pub fn new_randomized(kind: &Kind, size: usize) -> Puzzle {
+    pub fn new_randomized(
+        kind: &Kind,
+        difficulty: Difficulty,
+        size: usize,
+    ) -> Puzzle {
         let mut puzzle = Puzzle::new(kind, size);
-        generate::generate_randomized(&mut puzzle, 1000);
+        let iterations = match difficulty {
+            Difficulty::Easy => 100,
+            Difficulty::Medium => 1000,
+            Difficulty::Hard => 10000,
+        };
+        generate::generate_randomized(&mut puzzle, iterations);
         puzzle
     }
 
