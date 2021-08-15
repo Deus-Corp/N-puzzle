@@ -14,13 +14,14 @@ mod puzzle;
 mod solution;
 mod validity;
 
+use heuristic::Heuristic;
 use puzzle::{Difficulty, Kind, Puzzle};
 
 struct Sia {
 	pub file: Option<String>,
 	pub kind: Kind,
 	pub size: usize,
-	//heuristic
+	pub heuristic: Heuristic,
 	pub difficulty: Difficulty,
 	//algo
 }
@@ -70,10 +71,11 @@ fn clap_your_hands() -> Sia {
 	/*													*/
 
 	/* kind option										*/
-	let input_kind = matches.value_of("kind").unwrap_or("classic");
+	let input_kind = matches.value_of("kind").unwrap_or("CLASSIC");
 	let kind = match input_kind {
+		"CLASSIC" | "classic" => Kind::Classic,
 		"SNAIL" | "snail" => Kind::_Snail,
-		_ => Kind::Classic,
+		_ => unimplemented!(),
 	};
 	/*													*/
 
@@ -81,7 +83,19 @@ fn clap_your_hands() -> Sia {
 	let input_size = matches.value_of("size").unwrap_or("3");
 	let size = match input_size.parse() {
 		Ok(s) => s,
-		_ => 3,
+		_ => unimplemented!(),
+	};
+	/*													*/
+
+	/* heuristic option										*/
+	let input_heuristic =
+		matches.value_of("heuristic").unwrap_or("HAMMING");
+	let heuristic = match input_heuristic {
+		"ZERO" | "zero" => Heuristic::Zero,
+		"HAMMING" | "hamming" => Heuristic::HammingDistance,
+		"MANHATTAN" | "manhattan" => Heuristic::ManhattanDistance,
+		"LINEAR" | "linear" => Heuristic::LinearConflict,
+		_ => unimplemented!(),
 	};
 	/*													*/
 
@@ -92,7 +106,7 @@ fn clap_your_hands() -> Sia {
 		"EASY" | "easy" => Difficulty::Easy,
 		"MEDIUM" | "medium" => Difficulty::Medium,
 		"HIGH" | "high" => Difficulty::Hard,
-		_ => Difficulty::Easy,
+		_ => unimplemented!(),
 	};
 	/*													*/
 
@@ -100,6 +114,7 @@ fn clap_your_hands() -> Sia {
 		file,
 		kind,
 		size,
+		heuristic,
 		difficulty,
 	}
 }

@@ -16,4 +16,7 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all build clean fclean re
+test:
+	cargo test
+
+.PHONY: all build clean fclean re test
