@@ -24,4 +24,20 @@ impl Tile {
             },
         }
     }
+
+    pub fn is_in_row_conflict_with(&self, other: &Tile) -> bool {
+        self.value != 0
+            && other.value != 0
+            && self.goal.row == self.pos.row
+            && self.goal.row == other.goal.row
+            && self.goal.col > other.goal.col
+    }
+
+    pub fn is_in_col_conflict_with(&self, other: &Tile) -> bool {
+        self.value != 0
+            && other.value != 0
+            && self.goal.col == self.pos.col
+            && self.goal.col == other.goal.col
+            && self.goal.row > other.goal.row
+    }
 }
