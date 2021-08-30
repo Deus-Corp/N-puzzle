@@ -2,6 +2,7 @@ use super::graph::LinearConflictGraph;
 use super::puzzle::Puzzle;
 use super::tile::Tile;
 
+#[derive(Debug)]
 pub enum Heuristic {
     Zero,
     HammingDistance,
@@ -42,13 +43,9 @@ fn manhattan_distance(p1: &Puzzle, _: &Puzzle) -> u32 {
     distance
 }
 
-fn linear_col_conflicts(p1: &Puzzle, p2: &Puzzle, col: usize) -> u32 {
+fn linear_col_conflicts(p1: &Puzzle, _: &Puzzle, col: usize) -> u32 {
     let mut lc = 0;
     let mut lng = LinearConflictGraph::new();
-    let mut map = vec![0; p1.flat.len()];
-    for i in 0..p2.flat.len() {
-        map[p2.flat[i] as usize] = i;
-    }
     for row1 in 0..p1.n {
         for row2 in (row1 + 1)..p1.n {
             let tile1 = Tile::new(p1, col, row1);

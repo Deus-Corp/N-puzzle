@@ -26,8 +26,8 @@ impl fmt::Display for Solution {
     }
 }
 
-pub fn solve(start: Puzzle, end: Puzzle) {
-    let h = get_heuristic(Heuristic::ManhattanDistance);
+pub fn solve(start: Puzzle, end: Puzzle, heuristic: Heuristic) {
+    let h = get_heuristic(heuristic);
     let solution = a_star(start, end, h);
 
     match solution {

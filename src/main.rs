@@ -19,6 +19,7 @@ mod validity;
 use heuristic::Heuristic;
 use puzzle::{Difficulty, Kind, Puzzle};
 
+#[derive(Debug)]
 struct Sia {
 	pub file: Option<String>,
 	pub kind: Kind,
@@ -55,6 +56,14 @@ fn clap_your_hands() -> Sia {
 				.takes_value(true)
 				.value_name("NUMBER")
 				.help("The N we talk about")
+		)
+		.arg(
+			Arg::with_name("heuristic")
+				.short("h")
+				.long("heuristic")
+				.takes_value(true)
+				.value_name("ZERO|HAMMING|MANHATTAN|LINEAR")
+				.help("Heuristic function used in A*")
 		)
 		.arg(
 			Arg::with_name("difficulty")
@@ -144,10 +153,11 @@ fn get_puzzle(args: &Sia) -> Result<Puzzle, Box<dyn Error>> {
 
 fn main() {
 	let args = clap_your_hands();
+	println!("{:?}", args);
 
 	if let Ok(mut puzzle) = get_puzzle(&args) {
 		let goal = Puzzle::new(&args.kind, puzzle.n);
 		puzzle.set_goal(&goal);
-		solution::solve(puzzle, goal);
+		solution::solve(puzzle, goal, args.heuristic);
 	}
 }

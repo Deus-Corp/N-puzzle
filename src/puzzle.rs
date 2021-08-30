@@ -3,13 +3,14 @@ use super::moves::Move;
 
 pub type Matrix = Vec<Vec<u16>>;
 
+#[derive(Debug)]
 pub enum Kind {
     Classic,
     _Snail,
     _Reverse,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum Difficulty {
     Easy,
     Medium,
