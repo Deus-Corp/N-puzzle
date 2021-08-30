@@ -16,10 +16,11 @@ pub enum Difficulty {
     Hard,
 }
 
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Clone, Hash)]
 pub struct Puzzle {
     pub n: usize,
     pub flat: Vec<u16>,
+    pub end: Vec<usize>,
     pub blank: usize,
 }
 
@@ -34,14 +35,14 @@ impl Puzzle {
         let flat =
             matrix.iter().flat_map(|row| row.iter()).cloned().collect();
         let blank = Puzzle::get_index_of(&flat, 0);
-
+        let end = vec![0; flat.len()];
         Puzzle {
             n: msize,
             flat,
+            end,
             blank,
         }
     }
-
     pub fn new(kind: &Kind, size: usize) -> Puzzle {
         match kind {
             Kind::Classic => generate::new_classic(size),
@@ -49,7 +50,6 @@ impl Puzzle {
             Kind::_Reverse => unimplemented!(),
         }
     }
-
     pub fn new_randomized(
         kind: &Kind,
         difficulty: Difficulty,
@@ -64,23 +64,25 @@ impl Puzzle {
         generate::generate_randomized(&mut puzzle, iterations);
         puzzle
     }
-
     pub fn neighbors(&self) -> Vec<Puzzle> {
         let mut neighbors = vec![];
         let moves = Move::moves(self);
-
         for i in 0..moves.len() {
             let neighbor = self.new_state(&moves[i]);
             neighbors.push(neighbor);
         }
         neighbors
     }
-
     fn new_state(&self, m: &Move) -> Puzzle {
         let mut new = self.clone();
-
         m.apply(&mut new);
         new
+    }
+
+    pub fn set_goal(&mut self, goal: &Puzzle) {
+        for i in 0..goal.flat.len() {
+            self.end[goal.flat[i] as usize] = i;
+        }
     }
 }
 
@@ -96,6 +98,16 @@ impl fmt::Debug for Puzzle {
     }
 }
 
+impl PartialEq for Puzzle {
+    fn eq(&self, other: &Self) -> bool {
+        // ignore end
+        self.n == other.n
+            && self.flat == other.flat
+            && self.blank == other.blank
+    }
+}
+impl Eq for Puzzle {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -110,7 +122,8 @@ mod tests {
             Puzzle {
                 n: 3,
                 flat: vec![1, 0, 3, 1, 2, 3, 1, 2, 3],
-                blank: 1
+                blank: 1,
+                end: vec![]
             }
         );
 
@@ -122,7 +135,8 @@ mod tests {
             Puzzle {
                 n: 3,
                 flat: vec![1, 1, 1, 2, 2, 2, 3, 3, 0],
-                blank: 8
+                blank: 8,
+                end: vec![]
             }
         );
 
@@ -139,7 +153,8 @@ mod tests {
             Puzzle {
                 n: 4,
                 flat: vec![0, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1],
-                blank: 0
+                blank: 0,
+                end: vec![]
             }
         );
     }
@@ -152,6 +167,7 @@ mod tests {
                 n: 3,
                 flat: vec![1, 2, 3, 4, 5, 6, 7, 8, 0],
                 blank: 8,
+                end: vec![]
             }
         );
 
@@ -163,6 +179,7 @@ mod tests {
                     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0
                 ],
                 blank: 15,
+                end: vec![]
             }
         );
 
@@ -174,7 +191,8 @@ mod tests {
                     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
                     17, 18, 19, 20, 21, 22, 23, 24, 0
                 ],
-                blank: 24
+                blank: 24,
+                end: vec![]
             }
         );
     }
@@ -192,22 +210,26 @@ mod tests {
                 Puzzle {
                     n: 3,
                     flat: vec![1, 0, 3, 4, 2, 5, 6, 7, 8],
-                    blank: 1
+                    blank: 1,
+                    end: vec![]
                 },
                 Puzzle {
                     n: 3,
                     flat: vec![1, 2, 3, 4, 7, 5, 6, 0, 8],
-                    blank: 7
+                    blank: 7,
+                    end: vec![]
                 },
                 Puzzle {
                     n: 3,
                     flat: vec![1, 2, 3, 0, 4, 5, 6, 7, 8],
-                    blank: 3
+                    blank: 3,
+                    end: vec![]
                 },
                 Puzzle {
                     n: 3,
                     flat: vec![1, 2, 3, 4, 5, 0, 6, 7, 8],
-                    blank: 5
+                    blank: 5,
+                    end: vec![]
                 },
             ]
         );
@@ -226,12 +248,14 @@ mod tests {
                 Puzzle {
                     n: 3,
                     flat: vec![3, 1, 2, 0, 4, 5, 6, 7, 8],
-                    blank: 3
+                    blank: 3,
+                    end: vec![]
                 },
                 Puzzle {
                     n: 3,
                     flat: vec![1, 0, 2, 3, 4, 5, 6, 7, 8],
-                    blank: 1
+                    blank: 1,
+                    end: vec![]
                 },
             ]
         );
@@ -250,17 +274,20 @@ mod tests {
                 Puzzle {
                     n: 3,
                     flat: vec![1, 2, 3, 4, 0, 6, 7, 5, 8],
-                    blank: 4
+                    blank: 4,
+                    end: vec![]
                 },
                 Puzzle {
                     n: 3,
                     flat: vec![1, 2, 3, 4, 5, 6, 0, 7, 8],
-                    blank: 6
+                    blank: 6,
+                    end: vec![]
                 },
                 Puzzle {
                     n: 3,
                     flat: vec![1, 2, 3, 4, 5, 6, 7, 8, 0],
-                    blank: 8
+                    blank: 8,
+                    end: vec![]
                 }
             ]
         );
@@ -287,7 +314,8 @@ mod tests {
                         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 13, 14, 15,
                         12,
                     ],
-                    blank: 11
+                    blank: 11,
+                    end: vec![]
                 },
                 Puzzle {
                     n: 4,
@@ -295,7 +323,8 @@ mod tests {
                         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0,
                         15,
                     ],
-                    blank: 14
+                    blank: 14,
+                    end: vec![]
                 },
             ]
         );

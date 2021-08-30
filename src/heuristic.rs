@@ -1,4 +1,6 @@
+use super::graph::LinearConflictGraph;
 use super::puzzle::Puzzle;
+use super::tile::Tile;
 
 pub enum Heuristic {
     Zero,
@@ -6,6 +8,17 @@ pub enum Heuristic {
     ManhattanDistance,
     LinearConflict,
 }
+
+// pub struct Point {
+//     x: usize,
+//     y: usize,
+// }
+
+// pub struct Tile {
+//     value: u16,
+//     goal: Point,
+//     pos: Point,
+// }
 
 fn zero(_p1: &Puzzle, _p2: &Puzzle) -> u32 {
     0
@@ -33,10 +46,10 @@ fn manhattan_distance(p1: &Puzzle, p2: &Puzzle) -> u32 {
         }
 
         let j = map[p1.flat[i] as usize];
-        let x1 = i / p1.n;
-        let x2 = j / p1.n;
-        let y1 = i % p1.n;
-        let y2 = j % p1.n;
+        let x1 = i % p1.n;
+        let x2 = j % p1.n;
+        let y1 = i / p1.n;
+        let y2 = j / p1.n;
         let dx = x1 as i16 - x2 as i16;
         let dy = y1 as i16 - y2 as i16;
         distance += (dx.abs() + dy.abs()) as u32;
@@ -44,49 +57,101 @@ fn manhattan_distance(p1: &Puzzle, p2: &Puzzle) -> u32 {
     distance
 }
 
-fn line_conflicts(p1: &Puzzle, p2: &Puzzle) -> u32 {
-    let mut conflicts: u32 = 0;
+fn linear_col_conflicts(p1: &Puzzle, p2: &Puzzle, col: usize) -> u32 {
+    let mut lc = 0;
+    let mut lng = LinearConflictGraph::new();
     let mut map = vec![0; p1.flat.len()];
     for i in 0..p2.flat.len() {
         map[p2.flat[i] as usize] = i;
     }
-    for row in 0..p1.n {
-        for col1 in 0..p1.n {
-            for col2 in (col1 + 1)..p1.n {
-                if p1.flat[col1 + row * p1.n] == 0
-                    || p1.flat[col2 + row * p1.n] == 0
-                {
-                    continue;
-                }
-                let goal_row1 =
-                    map[p1.flat[col1 + row * p1.n] as usize] / p1.n;
-                let goal_row2 =
-                    map[p1.flat[col2 + row * p1.n] as usize] / p1.n;
-                let goal_col1 =
-                    map[p1.flat[col1 + row * p1.n] as usize] % p1.n;
-                let goal_col2 =
-                    map[p1.flat[col2 + row * p1.n] as usize] % p1.n;
-                print!(
-                    "{} {} col:{} row:{} goal_row1:{} goal_row2:{} goal_col1:{} goal_col2:{}",
-                    p1.flat[col1 + row * p1.n],
-                    p1.flat[col2 + row * p1.n],
-                    col1,
-                    row,
-                    goal_row1,
-                    goal_row2,
-                    goal_col1,
-                    goal_col2,
-                );
-                if goal_row1 == goal_row2 && goal_col1 > goal_col2 {
-                    print!(" +1");
-                    conflicts += 1;
-                }
-                println!("");
+    for row1 in 0..p1.n {
+        for row2 in (row1 + 1)..p1.n {
+            let tile1 = p1.flat[col + row1 * p1.n];
+            if tile1 == 0 {
+                continue;
+            }
+            let tile1_goal = map[tile1 as usize];
+            let tile1_goal_col = tile1_goal % p1.n;
+            let tile1_goal_row = tile1_goal / p1.n;
+            if tile1_goal_col != col {
+                continue;
+            }
+            let tile2 = p1.flat[col + row2 * p1.n];
+            if tile2 == 0 {
+                continue;
+            }
+            let tile2_goal = map[tile2 as usize];
+            let tile2_goal_col = tile2_goal % p1.n;
+            let tile2_goal_row = tile2_goal / p1.n;
+            if tile1_goal_col != tile2_goal_col {
+                continue;
+            }
+            if tile1_goal_row > tile2_goal_row {
+                lng.push_conflict(tile1, tile2);
             }
         }
     }
-    print!("{:?}", p1);
-    conflicts
+    while lng.is_conflicts() == true {
+        let tile = lng.most_conflicts();
+        lng.remove_conflict_with(tile);
+        lc += 1
+    }
+    lc
+}
+
+fn linear_row_conflicts(p1: &Puzzle, p2: &Puzzle, row: usize) -> u32 {
+    let mut lc = 0;
+    let mut lng = LinearConflictGraph::new();
+    let mut map = vec![0; p1.flat.len()];
+    for i in 0..p2.flat.len() {
+        map[p2.flat[i] as usize] = i;
+    }
+    for col1 in 0..p1.n {
+        for col2 in (col1 + 1)..p1.n {
+            let tile1 = p1.flat[col1 + row * p1.n];
+            if tile1 == 0 {
+                continue;
+            }
+            let tile1_goal = map[tile1 as usize];
+            let tile1_goal_col = tile1_goal % p1.n;
+            let tile1_goal_row = tile1_goal / p1.n;
+            if tile1_goal_row != row {
+                continue;
+            }
+            let tile2 = p1.flat[col2 + row * p1.n];
+            if tile2 == 0 {
+                continue;
+            }
+            let tile2_goal = map[tile2 as usize];
+            let tile2_goal_col = tile2_goal % p1.n;
+            let tile2_goal_row = tile2_goal / p1.n;
+            if tile1_goal_row != tile2_goal_row {
+                continue;
+            }
+            if tile1_goal_col > tile2_goal_col {
+                lng.push_conflict(tile1, tile2);
+            }
+        }
+    }
+    while lng.is_conflicts() == true {
+        let tile = lng.most_conflicts();
+        lng.remove_conflict_with(tile);
+        lc += 1
+    }
+    println!("\nlc = {}", lc);
+    lc
+}
+
+fn line_conflicts(p1: &Puzzle, p2: &Puzzle) -> u32 {
+    let mut row_conflicts = 0;
+    for row in 0..p1.n {
+        row_conflicts += linear_row_conflicts(p1, p2, row);
+    }
+    let mut col_conflicts = 0;
+    for col in 0..p1.n {
+        col_conflicts += linear_col_conflicts(p1, p2, col);
+    }
+    row_conflicts + col_conflicts
 }
 
 // for top to bottom, left to right
@@ -95,6 +160,10 @@ fn line_conflicts(p1: &Puzzle, p2: &Puzzle) -> u32 {
 //         print!("{} ", p1.flat[col + row * p1.n]);
 //     }
 // }
+
+// [https://medium.com/swlh/looking-into-k-puzzle-heuristics-6189318eaca2]
+// [https://cse.sc.edu/~mgv/csce580sp15/gradPres/HanssonMayerYung1992.pdf]
+//
 fn linear_conflict(p1: &Puzzle, p2: &Puzzle) -> u32 {
     manhattan_distance(p1, p2) + line_conflicts(p1, p2) * 2
 }

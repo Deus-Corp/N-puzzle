@@ -12,9 +12,15 @@ fn generate_classic(n: usize) -> Vec<u16> {
 
 pub fn new_classic(n: usize) -> Puzzle {
     let mut flat = generate_classic(n);
+    let end = vec![0; flat.len()];
     let blank = flat.len() - 1;
     flat[blank] = 0;
-    Puzzle { n, flat, blank }
+    Puzzle {
+        n,
+        flat,
+        end,
+        blank,
+    }
 }
 
 // [https://www.geeksforgeeks.org/print-a-given-matrix-in-spiral-form/]
@@ -53,9 +59,15 @@ fn generate_snail(n: usize) -> Vec<u16> {
 
 pub fn new_snail(n: usize) -> Puzzle {
     let mut flat = generate_snail(n);
+    let end = vec![0; flat.len()];
     let blank = Puzzle::get_index_of(&flat, (n * n) as u16);
     flat[blank] = 0;
-    Puzzle { n, flat, blank }
+    Puzzle {
+        n,
+        flat,
+        end,
+        blank,
+    }
 }
 
 use rand::Rng;
@@ -81,6 +93,7 @@ mod tests {
             Puzzle {
                 n: 3,
                 flat: vec![1, 2, 3, 8, 0, 4, 7, 6, 5],
+                end: vec![],
                 blank: 4,
             }
         );
@@ -92,6 +105,7 @@ mod tests {
                 flat: vec![
                     1, 2, 3, 4, 12, 13, 14, 5, 11, 0, 15, 6, 10, 9, 8, 7
                 ],
+                end: vec![],
                 blank: 9,
             }
         );
@@ -104,6 +118,7 @@ mod tests {
                     1, 2, 3, 4, 5, 16, 17, 18, 19, 6, 15, 24, 0, 20, 7,
                     14, 23, 22, 21, 8, 13, 12, 11, 10, 9
                 ],
+                end: vec![],
                 blank: 12,
             }
         );

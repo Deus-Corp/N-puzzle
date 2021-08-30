@@ -6,12 +6,14 @@ use std::path::Path;
 
 mod a_star;
 mod generate;
+mod graph;
 mod heuristic;
 mod inversions;
 mod moves;
 mod parsing;
 mod puzzle;
 mod solution;
+mod tile;
 mod validity;
 
 use heuristic::Heuristic;
@@ -143,8 +145,9 @@ fn get_puzzle(args: &Sia) -> Result<Puzzle, Box<dyn Error>> {
 fn main() {
 	let args = clap_your_hands();
 
-	if let Ok(puzzle) = get_puzzle(&args) {
+	if let Ok(mut puzzle) = get_puzzle(&args) {
 		let goal = Puzzle::new(&args.kind, puzzle.n);
+		puzzle.set_goal(&goal);
 		solution::solve(puzzle, goal);
 	}
 }
