@@ -37,7 +37,9 @@ fn parse_matrix(lines: &[String]) -> Result<Matrix, ParseIntError> {
 		.collect::<Result<Matrix, _>>()
 }
 
-pub fn parse_puzzle(path: &Path) -> Result<(usize, Matrix), Box<dyn Error>> {
+pub fn parse_puzzle(
+	path: &Path,
+) -> Result<(usize, Matrix), Box<dyn Error>> {
 	let file_lines = read_file(path)?;
 	let puzzle_maybe = sanitize_comments(&file_lines);
 	let msize = parse_matrix_size(&puzzle_maybe[0])?;

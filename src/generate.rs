@@ -72,7 +72,7 @@ pub fn new_snail(n: usize) -> Puzzle {
 
 use rand::Rng;
 
-pub fn generate_randomized(puzzle: &mut Puzzle, iterations: usize) {
+pub fn randomize(puzzle: &mut Puzzle, iterations: usize) {
     let mut rng = rand::thread_rng();
     for _ in 0..iterations {
         let moves = Move::moves(puzzle);

@@ -2,40 +2,40 @@ use super::graph::LinearConflictGraph;
 use super::puzzle::Puzzle;
 use super::tile::Tile;
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Heuristic {
     Zero,
     HammingDistance,
     ManhattanDistance,
-    LinearConflict,
+    LinearConflicts,
 }
 
 fn zero(_: &Puzzle, _: &Puzzle) -> u32 {
     0
 }
 
-fn hamming_distance(p1: &Puzzle, p2: &Puzzle) -> u32 {
+fn hamming_distance(p: &Puzzle, _: &Puzzle) -> u32 {
     let mut misplaced = 0;
-    for i in 0..p1.flat.len() {
-        if p1.flat[i] != p2.flat[i] {
+    for i in 0..p.flat.len() {
+        if i != p.end[p.flat[i] as usize] {
             misplaced += 1;
         }
     }
     misplaced
 }
 
-fn manhattan_distance(p1: &Puzzle, _: &Puzzle) -> u32 {
+fn manhattan_distance(p: &Puzzle, _: &Puzzle) -> u32 {
     let mut distance: u32 = 0;
-    for i in 0..p1.flat.len() {
-        if p1.flat[i] == 0 {
+    for i in 0..p.flat.len() {
+        if p.flat[i] == 0 {
             continue;
         }
 
-        let j = p1.end[p1.flat[i] as usize];
-        let x1 = i % p1.n;
-        let x2 = j % p1.n;
-        let y1 = i / p1.n;
-        let y2 = j / p1.n;
+        let j = p.end[p.flat[i] as usize];
+        let x1 = i % p.n;
+        let x2 = j % p.n;
+        let y1 = i / p.n;
+        let y2 = j / p.n;
         let dx = x1 as i16 - x2 as i16;
         let dy = y1 as i16 - y2 as i16;
         distance += (dx.abs() + dy.abs()) as u32;
@@ -43,13 +43,13 @@ fn manhattan_distance(p1: &Puzzle, _: &Puzzle) -> u32 {
     distance
 }
 
-fn linear_col_conflicts(p1: &Puzzle, _: &Puzzle, col: usize) -> u32 {
+fn linear_col_conflicts(p: &Puzzle, col: usize) -> u32 {
     let mut lc = 0;
     let mut lng = LinearConflictGraph::new();
-    for row1 in 0..p1.n {
-        for row2 in (row1 + 1)..p1.n {
-            let tile1 = Tile::new(p1, col, row1);
-            let tile2 = Tile::new(p1, col, row2);
+    for row1 in 0..p.n {
+        for row2 in (row1 + 1)..p.n {
+            let tile1 = Tile::new(p, col, row1);
+            let tile2 = Tile::new(p, col, row2);
             if tile1.is_in_col_conflict_with(&tile2) {
                 lng.push_conflict(tile1.value, tile2.value);
             }
@@ -63,13 +63,13 @@ fn linear_col_conflicts(p1: &Puzzle, _: &Puzzle, col: usize) -> u32 {
     lc
 }
 
-fn linear_row_conflicts(p1: &Puzzle, _: &Puzzle, row: usize) -> u32 {
+fn linear_row_conflicts(p: &Puzzle, row: usize) -> u32 {
     let mut lc = 0;
     let mut lng = LinearConflictGraph::new();
-    for col1 in 0..p1.n {
-        for col2 in (col1 + 1)..p1.n {
-            let tile1 = Tile::new(p1, col1, row);
-            let tile2 = Tile::new(p1, col2, row);
+    for col1 in 0..p.n {
+        for col2 in (col1 + 1)..p.n {
+            let tile1 = Tile::new(p, col1, row);
+            let tile2 = Tile::new(p, col2, row);
             if tile1.is_in_row_conflict_with(&tile2) {
                 lng.push_conflict(tile1.value, tile2.value);
             }
@@ -83,20 +83,17 @@ fn linear_row_conflicts(p1: &Puzzle, _: &Puzzle, row: usize) -> u32 {
     lc
 }
 
-fn line_conflicts(p1: &Puzzle, p2: &Puzzle) -> u32 {
-    (0..p1.n)
-        .map(|i| {
-            linear_row_conflicts(p1, p2, i)
-                + linear_col_conflicts(p1, p2, i)
-        })
+fn linear_conflicts_sum(p: &Puzzle) -> u32 {
+    (0..p.n)
+        .map(|i| linear_row_conflicts(p, i) + linear_col_conflicts(p, i))
         .sum()
 }
 
 // [https://medium.com/swlh/looking-into-k-puzzle-heuristics-6189318eaca2]
 // [https://cse.sc.edu/~mgv/csce580sp15/gradPres/HanssonMayerYung1992.pdf]
 //
-fn linear_conflict(p1: &Puzzle, p2: &Puzzle) -> u32 {
-    manhattan_distance(p1, p2) + line_conflicts(p1, p2) * 2
+fn linear_conflicts(p1: &Puzzle, p2: &Puzzle) -> u32 {
+    manhattan_distance(p1, p2) + linear_conflicts_sum(p1) * 2
 }
 
 pub fn get_heuristic(
@@ -106,7 +103,7 @@ pub fn get_heuristic(
         Heuristic::Zero => zero,
         Heuristic::HammingDistance => hamming_distance,
         Heuristic::ManhattanDistance => manhattan_distance,
-        Heuristic::LinearConflict => linear_conflict,
+        Heuristic::LinearConflicts => linear_conflicts,
     };
 
     Box::new(h)
@@ -242,8 +239,8 @@ mod tests {
         sum_3.set_goal(&goal_classic);
         sum_5.set_goal(&goal_classic);
 
-        assert_eq!(line_conflicts(&sum_1, &goal_classic), 1);
-        assert_eq!(line_conflicts(&sum_3, &goal_classic), 3);
-        assert_eq!(line_conflicts(&sum_5, &goal_classic), 5);
+        assert_eq!(linear_conflicts_sum(&sum_1), 1);
+        assert_eq!(linear_conflicts_sum(&sum_3), 3);
+        assert_eq!(linear_conflicts_sum(&sum_5), 5);
     }
 }

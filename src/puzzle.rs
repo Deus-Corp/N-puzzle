@@ -3,7 +3,7 @@ use super::moves::Move;
 
 pub type Matrix = Vec<Vec<u16>>;
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Kind {
     Classic,
     _Snail,
@@ -44,15 +44,17 @@ impl Puzzle {
             blank,
         }
     }
-    pub fn new(kind: &Kind, size: usize) -> Puzzle {
+
+    pub fn new(kind: Kind, size: usize) -> Puzzle {
         match kind {
             Kind::Classic => generate::new_classic(size),
             Kind::_Snail => generate::new_snail(size),
             Kind::_Reverse => unimplemented!(),
         }
     }
+
     pub fn new_randomized(
-        kind: &Kind,
+        kind: Kind,
         difficulty: Difficulty,
         size: usize,
     ) -> Puzzle {
@@ -62,9 +64,10 @@ impl Puzzle {
             Difficulty::Medium => 1000,
             Difficulty::Hard => 10000,
         };
-        generate::generate_randomized(&mut puzzle, iterations);
+        generate::randomize(&mut puzzle, iterations);
         puzzle
     }
+
     pub fn neighbors(&self) -> Vec<Puzzle> {
         let mut neighbors = vec![];
         let moves = Move::moves(self);
@@ -74,6 +77,7 @@ impl Puzzle {
         }
         neighbors
     }
+
     fn new_state(&self, m: &Move) -> Puzzle {
         let mut new = self.clone();
         m.apply(&mut new);

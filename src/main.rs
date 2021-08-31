@@ -1,10 +1,5 @@
-extern crate clap;
-use clap::{App, Arg};
-
-use std::error::Error;
-use std::path::Path;
-
 mod a_star;
+mod args;
 mod generate;
 mod graph;
 mod heuristic;
@@ -16,148 +11,59 @@ mod solution;
 mod tile;
 mod validity;
 
-use heuristic::Heuristic;
-use puzzle::{Difficulty, Kind, Puzzle};
+use std::error::Error;
+use std::path::Path;
 
-#[derive(Debug)]
-struct Sia {
-	pub file: Option<String>,
-	pub kind: Kind,
-	pub size: usize,
-	pub heuristic: Heuristic,
-	pub difficulty: Difficulty,
-	//algo
-}
+use args::{parse_args, Sia};
+use puzzle::Puzzle;
+use solution::solve;
 
-fn clap_your_hands() -> Sia {
-	let clap_app = App::new("42 project: N-Puzzle")
-		.version("AMG v12 biturbo")
-		.author("Rémi Pinoit <rpinoit@student.42.fr>")
-		.about("The goal of this project is to smack some N-puzzles with some A* search algorithm.")
-		.arg(
-			Arg::with_name("file")
-				.short("f")
-				.long("file")
-				.takes_value(true)
-				.value_name("FILE")
-				.help("File with custom puzzle"))
-		.arg(
-			Arg::with_name("kind")
-				.short("k")
-				.long("kind")
-				.takes_value(true)
-				.value_name("CLASSIC|SNAIL")
-				.help("Kind of the puzzle goal")
-		)
-		.arg(
-			Arg::with_name("size")
-				.short("s")
-				.long("size")
-				.takes_value(true)
-				.value_name("NUMBER")
-				.help("The N we talk about")
-		)
-		.arg(
-			Arg::with_name("heuristic")
-				.short("h")
-				.long("heuristic")
-				.takes_value(true)
-				.value_name("ZERO|HAMMING|MANHATTAN|LINEAR")
-				.help("Heuristic function used in A*")
-		)
-		.arg(
-			Arg::with_name("difficulty")
-				.short("d")
-				.long("difficulty")
-				.takes_value(true)
-				.value_name("EASY|MEDIUM|HARD")
-				.help("This is how much randomized puzzle will be")
-		);
-
-	let matches = clap_app.get_matches();
-
-	/* file option										*/
-	let input_file = matches.value_of("file");
-	let file = input_file.map(|f| f.to_string());
-	/*													*/
-
-	/* kind option										*/
-	let input_kind = matches.value_of("kind").unwrap_or("CLASSIC");
-	let kind = match input_kind {
-		"CLASSIC" | "classic" => Kind::Classic,
-		"SNAIL" | "snail" => Kind::_Snail,
-		_ => unimplemented!(),
-	};
-	/*													*/
-
-	/* size option										*/
-	let input_size = matches.value_of("size").unwrap_or("3");
-	let size = match input_size.parse() {
-		Ok(s) => s,
-		_ => unimplemented!(),
-	};
-	/*													*/
-
-	/* heuristic option										*/
-	let input_heuristic =
-		matches.value_of("heuristic").unwrap_or("HAMMING");
-	let heuristic = match input_heuristic {
-		"ZERO" | "zero" => Heuristic::Zero,
-		"HAMMING" | "hamming" => Heuristic::HammingDistance,
-		"MANHATTAN" | "manhattan" => Heuristic::ManhattanDistance,
-		"LINEAR" | "linear" => Heuristic::LinearConflict,
-		_ => unimplemented!(),
-	};
-	/*													*/
-
-	/* difficulty option								*/
-	let input_difficulty =
-		matches.value_of("difficulty").unwrap_or("EASY");
-	let difficulty = match input_difficulty {
-		"EASY" | "easy" => Difficulty::Easy,
-		"MEDIUM" | "medium" => Difficulty::Medium,
-		"HIGH" | "high" => Difficulty::Hard,
-		_ => unimplemented!(),
-	};
-	/*													*/
-
-	Sia {
-		file,
-		kind,
-		size,
-		heuristic,
-		difficulty,
-	}
-}
-
-fn get_puzzle(args: &Sia) -> Result<Puzzle, Box<dyn Error>> {
-	if let Some(f) = &args.file {
-		let puzzle_path = Path::new(&f);
-		if !puzzle_path.is_file() {
-			panic!("Invalid file, the path is wrong !");
-		}
-
-		let (msize, matrix) = parsing::parse_puzzle(puzzle_path)?;
-		let custom_puzzle = Puzzle::from_matrix(msize, matrix);
-		if !validity::check_puzzle(&custom_puzzle) {
-			panic!("Invalid puzzle, unsolvable !");
-		}
-
-		return Ok(custom_puzzle);
+pub fn parse_file(f: &String) -> Result<Puzzle, Box<dyn Error>> {
+	let puzzle_path = Path::new(f);
+	if !puzzle_path.is_file() {
+		return Err("Invalid file, the path is wrong !".into());
 	}
 
-	let random_puzzle =
-		Puzzle::new_randomized(&args.kind, args.difficulty, args.size);
-	Ok(random_puzzle)
+	let (msize, matrix) = parsing::parse_puzzle(puzzle_path)?;
+	let custom_puzzle = Puzzle::from_matrix(msize, matrix);
+	if !validity::check_puzzle(&custom_puzzle) {
+		return Err("Invalid puzzle !".into());
+	}
+
+	Ok(custom_puzzle)
+}
+
+fn get_puzzle(options: &Sia) -> Result<Puzzle, Box<dyn Error>> {
+	let puzzle = match &options.file {
+		Some(f) => parse_file(f)?,
+		None => Puzzle::new_randomized(
+			options.kind,
+			options.difficulty,
+			options.size,
+		),
+	};
+	Ok(puzzle)
+}
+
+fn get_goal(options: &Sia) -> Puzzle {
+	Puzzle::new(options.kind, options.size)
+}
+
+fn n_puzzle(options: &Sia) -> Result<(), Box<dyn Error>> {
+	let mut puzzle = get_puzzle(options)?;
+	let goal = get_goal(options);
+
+	//check inversion validity
+	// if yes
+	puzzle.set_goal(&goal);
+
+	Ok(solve(puzzle, goal, options.heuristic))
 }
 
 fn main() {
-	let args = clap_your_hands();
-	println!("{:?}", args);
+	let options = parse_args();
 
-	if let Ok(mut puzzle) = get_puzzle(&args) {
-		let goal = Puzzle::new(&args.kind, puzzle.n);
-		puzzle.set_goal(&goal);
-		solution::solve(puzzle, goal, args.heuristic);
-	}
+	if let Err(err) = n_puzzle(&options) {
+		println!("ERROR: {}", err);
+	};
 }
