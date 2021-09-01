@@ -77,7 +77,27 @@ mod tests {
 			vec![9, 10, 11, 12],
 			vec![13, 15, 14, 0],
 		];
-		assert_eq!(check_puzzle(&Puzzle::from_matrix(4, matrix1)), true);
-		assert_eq!(check_puzzle(&Puzzle::from_matrix(4, matrix2)), false);
+
+		let goal = vec![
+			vec![1, 2, 3, 4],
+			vec![5, 6, 7, 8],
+			vec![9, 10, 11, 12],
+			vec![13, 14, 15, 0],
+		];
+
+		assert_eq!(
+			check_puzzle(
+				&Puzzle::from_matrix(4, matrix1),
+				&Puzzle::from_matrix(4, goal.clone())
+			),
+			true
+		);
+		assert_eq!(
+			check_puzzle(
+				&Puzzle::from_matrix(4, matrix2),
+				&Puzzle::from_matrix(4, goal.clone())
+			),
+			false
+		);
 	}
 }
