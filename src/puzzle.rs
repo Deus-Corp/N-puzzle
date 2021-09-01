@@ -23,6 +23,7 @@ pub struct Puzzle {
     pub flat: Vec<u16>,
     pub end: Vec<usize>,
     pub blank: usize,
+    pub was: Move,
 }
 
 impl Puzzle {
@@ -42,6 +43,7 @@ impl Puzzle {
             flat,
             end,
             blank,
+            was: Move::Hold,
         }
     }
 
@@ -128,7 +130,8 @@ mod tests {
                 n: 3,
                 flat: vec![1, 0, 3, 1, 2, 3, 1, 2, 3],
                 blank: 1,
-                end: vec![]
+                end: vec![],
+                was: Move::Hold
             }
         );
 
@@ -141,7 +144,8 @@ mod tests {
                 n: 3,
                 flat: vec![1, 1, 1, 2, 2, 2, 3, 3, 0],
                 blank: 8,
-                end: vec![]
+                end: vec![],
+                was: Move::Hold
             }
         );
 
@@ -159,7 +163,8 @@ mod tests {
                 n: 4,
                 flat: vec![0, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1],
                 blank: 0,
-                end: vec![]
+                end: vec![],
+                was: Move::Hold
             }
         );
     }
@@ -172,7 +177,8 @@ mod tests {
                 n: 3,
                 flat: vec![1, 2, 3, 4, 5, 6, 7, 8, 0],
                 blank: 8,
-                end: vec![]
+                end: vec![],
+                was: Move::Hold
             }
         );
 
@@ -184,7 +190,8 @@ mod tests {
                     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0
                 ],
                 blank: 15,
-                end: vec![]
+                end: vec![],
+                was: Move::Hold
             }
         );
 
@@ -197,7 +204,8 @@ mod tests {
                     17, 18, 19, 20, 21, 22, 23, 24, 0
                 ],
                 blank: 24,
-                end: vec![]
+                end: vec![],
+                was: Move::Hold
             }
         );
     }
@@ -216,25 +224,29 @@ mod tests {
                     n: 3,
                     flat: vec![1, 0, 3, 4, 2, 5, 6, 7, 8],
                     blank: 1,
-                    end: vec![]
+                    end: vec![],
+                    was: Move::Hold
                 },
                 Puzzle {
                     n: 3,
                     flat: vec![1, 2, 3, 4, 7, 5, 6, 0, 8],
                     blank: 7,
-                    end: vec![]
+                    end: vec![],
+                    was: Move::Hold
                 },
                 Puzzle {
                     n: 3,
                     flat: vec![1, 2, 3, 0, 4, 5, 6, 7, 8],
                     blank: 3,
-                    end: vec![]
+                    end: vec![],
+                    was: Move::Hold
                 },
                 Puzzle {
                     n: 3,
                     flat: vec![1, 2, 3, 4, 5, 0, 6, 7, 8],
                     blank: 5,
-                    end: vec![]
+                    end: vec![],
+                    was: Move::Hold
                 },
             ]
         );
@@ -254,13 +266,15 @@ mod tests {
                     n: 3,
                     flat: vec![3, 1, 2, 0, 4, 5, 6, 7, 8],
                     blank: 3,
-                    end: vec![]
+                    end: vec![],
+                    was: Move::Hold
                 },
                 Puzzle {
                     n: 3,
                     flat: vec![1, 0, 2, 3, 4, 5, 6, 7, 8],
                     blank: 1,
-                    end: vec![]
+                    end: vec![],
+                    was: Move::Hold
                 },
             ]
         );
@@ -280,19 +294,22 @@ mod tests {
                     n: 3,
                     flat: vec![1, 2, 3, 4, 0, 6, 7, 5, 8],
                     blank: 4,
-                    end: vec![]
+                    end: vec![],
+                    was: Move::Hold
                 },
                 Puzzle {
                     n: 3,
                     flat: vec![1, 2, 3, 4, 5, 6, 0, 7, 8],
                     blank: 6,
-                    end: vec![]
+                    end: vec![],
+                    was: Move::Hold
                 },
                 Puzzle {
                     n: 3,
                     flat: vec![1, 2, 3, 4, 5, 6, 7, 8, 0],
                     blank: 8,
-                    end: vec![]
+                    end: vec![],
+                    was: Move::Hold
                 }
             ]
         );
@@ -320,7 +337,8 @@ mod tests {
                         12,
                     ],
                     blank: 11,
-                    end: vec![]
+                    end: vec![],
+                    was: Move::Hold
                 },
                 Puzzle {
                     n: 4,
@@ -329,7 +347,8 @@ mod tests {
                         15,
                     ],
                     blank: 14,
-                    end: vec![]
+                    end: vec![],
+                    was: Move::Hold
                 },
             ]
         );

@@ -20,6 +20,7 @@ pub fn new_classic(n: usize) -> Puzzle {
         flat,
         end,
         blank,
+        was: Move::Hold,
     }
 }
 
@@ -75,6 +76,7 @@ pub fn new_snail(n: usize) -> Puzzle {
         flat,
         end,
         blank,
+        was: Move::Hold,
     }
 }
 
@@ -103,6 +105,7 @@ mod tests {
                 flat: vec![1, 2, 3, 8, 0, 4, 7, 6, 5],
                 end: vec![],
                 blank: 4,
+                was: Move::Hold,
             }
         );
 
@@ -115,6 +118,7 @@ mod tests {
                 ],
                 end: vec![],
                 blank: 9,
+                was: Move::Hold,
             }
         );
 
@@ -128,6 +132,7 @@ mod tests {
                 ],
                 end: vec![],
                 blank: 12,
+                was: Move::Hold,
             }
         );
     }
