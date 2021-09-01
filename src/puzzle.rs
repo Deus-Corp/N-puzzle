@@ -97,7 +97,7 @@ use std::fmt;
 
 impl fmt::Debug for Puzzle {
     fn fmt(&self, dest: &mut fmt::Formatter) -> fmt::Result {
-        write!(dest, "{}:\n", self.n)?;
+        write!(dest, "{}: {:?}\n", self.n, self.was.opposite())?;
         for chunk in self.flat.chunks(self.n) {
             write!(dest, "{:?}\n", chunk)?;
         }

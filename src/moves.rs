@@ -1,6 +1,6 @@
 use super::puzzle::Puzzle;
 
-#[derive(Clone, Copy, Hash, PartialEq)]
+#[derive(Clone, Copy, Hash, PartialEq, Debug)]
 pub enum Move {
     Up,
     Down,

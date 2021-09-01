@@ -22,6 +22,7 @@ impl fmt::Display for Solution {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "Solution:")?;
         for puzzle in &self.path {
+            writeln!(f, "{:?}", puzzle.was.opposite())?;
             for chunk in puzzle.flat.chunks(puzzle.n) {
                 writeln!(f, "{:?}", chunk)?;
             }
