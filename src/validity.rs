@@ -24,18 +24,24 @@ fn is_solvable(puzzle: &Puzzle, inversions: usize) -> bool {
 	}
 }
 
-fn is_puzzle(sorted: Vec<u16>) -> bool {
-	sorted.windows(2).all(|w| w[0] + 1 == w[1])
+fn is_from_0_to_nxn(sorted: Vec<u16>) -> bool {
+	sorted[0] == 0 && sorted.windows(2).all(|w| w[0] + 1 == w[1])
 }
 
-fn is_nxn(puzzle: &Puzzle) -> bool {
+fn is_nxn_length(puzzle: &Puzzle) -> bool {
 	puzzle.n * puzzle.n == puzzle.flat.len()
 }
 
-pub fn check_puzzle(puzzle: &Puzzle) -> bool {
+pub fn check_puzzle(puzzle: &Puzzle, goal: &Puzzle) -> bool {
 	let (sorted, inversions) =
 		inversions::merge_count_inversion(&puzzle.flat);
-	is_nxn(puzzle) && is_puzzle(sorted) && is_solvable(&puzzle, inversions)
+	let (_, goal_inversions) =
+		inversions::merge_count_inversion(&goal.flat);
+
+	is_nxn_length(puzzle)
+		&& is_from_0_to_nxn(sorted)
+		&& is_solvable(puzzle, inversions)
+			== is_solvable(goal, goal_inversions)
 }
 
 #[cfg(test)]

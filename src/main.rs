@@ -18,7 +18,7 @@ use args::{parse_args, Sia};
 use puzzle::Puzzle;
 use solution::solve;
 
-pub fn parse_file(f: &String) -> Result<Puzzle, Box<dyn Error>> {
+fn get_puzzle_from_file(f: &String) -> Result<Puzzle, Box<dyn Error>> {
 	let puzzle_path = Path::new(f);
 	if !puzzle_path.is_file() {
 		return Err("Invalid file, the path is wrong !".into());
@@ -26,35 +26,33 @@ pub fn parse_file(f: &String) -> Result<Puzzle, Box<dyn Error>> {
 
 	let (msize, matrix) = parsing::parse_puzzle(puzzle_path)?;
 	let custom_puzzle = Puzzle::from_matrix(msize, matrix);
-	if !validity::check_puzzle(&custom_puzzle) {
-		return Err("Invalid puzzle !".into());
-	}
 
 	Ok(custom_puzzle)
 }
 
-fn get_puzzle(options: &Sia) -> Result<Puzzle, Box<dyn Error>> {
-	let puzzle = match &options.file {
-		Some(f) => parse_file(f)?,
-		None => Puzzle::new_randomized(
-			options.kind,
-			options.difficulty,
-			options.size,
-		),
-	};
-	Ok(puzzle)
+fn get_random_puzzle(options: &Sia) -> Puzzle {
+	Puzzle::new_randomized(options.kind, options.difficulty, options.size)
 }
 
-fn get_goal(options: &Sia) -> Puzzle {
+fn get_puzzle(options: &Sia) -> Result<Puzzle, Box<dyn Error>> {
+	let new_puzzle = match &options.file {
+		Some(f) => get_puzzle_from_file(f)?,
+		None => get_random_puzzle(options),
+	};
+	Ok(new_puzzle)
+}
+
+fn get_puzzle_goal(options: &Sia) -> Puzzle {
 	Puzzle::new(options.kind, options.size)
 }
 
 fn n_puzzle(options: &Sia) -> Result<(), Box<dyn Error>> {
 	let mut puzzle = get_puzzle(options)?;
-	let goal = get_goal(options);
+	let goal = get_puzzle_goal(options);
 
-	//check inversion validity
-	// if yes
+	if !validity::check_puzzle(&puzzle, &goal) {
+		return Err("Invalid puzzle !".into());
+	}
 	puzzle.set_goal(&goal);
 
 	Ok(solve(puzzle, goal, options.heuristic))

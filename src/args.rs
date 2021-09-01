@@ -83,7 +83,8 @@ fn clap_your_hands() -> Sia {
     let input_kind = matches.value_of("kind").unwrap_or("CLASSIC");
     let kind = match input_kind {
         "CLASSIC" | "classic" => Kind::Classic,
-        "SNAIL" | "snail" => Kind::_Snail,
+        "SNAIL" | "snail" => Kind::Snail,
+        "REVERSE" | "reverse" => Kind::Reverse,
         _ => not_supported(input_kind, "kind"),
     };
     /*													*/

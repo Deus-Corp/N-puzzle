@@ -23,6 +23,14 @@ pub fn new_classic(n: usize) -> Puzzle {
     }
 }
 
+pub fn new_reverse(n: usize) -> Puzzle {
+    let mut p = new_classic(n);
+    p.flat.reverse();
+
+    p.blank = Puzzle::get_index_of(&p.flat, 0);
+    p
+}
+
 // [https://www.geeksforgeeks.org/print-a-given-matrix-in-spiral-form/]
 //
 fn generate_snail(n: usize) -> Vec<u16> {

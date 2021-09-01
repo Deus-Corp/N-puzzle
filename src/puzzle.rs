@@ -6,8 +6,8 @@ pub type Matrix = Vec<Vec<u16>>;
 #[derive(Clone, Copy, Debug)]
 pub enum Kind {
     Classic,
-    _Snail,
-    _Reverse,
+    Snail,
+    Reverse,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -48,8 +48,8 @@ impl Puzzle {
     pub fn new(kind: Kind, size: usize) -> Puzzle {
         match kind {
             Kind::Classic => generate::new_classic(size),
-            Kind::_Snail => generate::new_snail(size),
-            Kind::_Reverse => unimplemented!(),
+            Kind::Snail => generate::new_snail(size),
+            Kind::Reverse => generate::new_reverse(size),
         }
     }
 
@@ -167,7 +167,7 @@ mod tests {
     #[test]
     fn test_new_classic() {
         assert_eq!(
-            Puzzle::new(&Kind::Classic, 3),
+            Puzzle::new(Kind::Classic, 3),
             Puzzle {
                 n: 3,
                 flat: vec![1, 2, 3, 4, 5, 6, 7, 8, 0],
@@ -177,7 +177,7 @@ mod tests {
         );
 
         assert_eq!(
-            Puzzle::new(&Kind::Classic, 4),
+            Puzzle::new(Kind::Classic, 4),
             Puzzle {
                 n: 4,
                 flat: vec![
@@ -189,7 +189,7 @@ mod tests {
         );
 
         assert_eq!(
-            Puzzle::new(&Kind::Classic, 5),
+            Puzzle::new(Kind::Classic, 5),
             Puzzle {
                 n: 5,
                 flat: vec![
