@@ -5,6 +5,7 @@ use std::process;
 
 use super::heuristic::Heuristic;
 use super::puzzle::{Difficulty, Kind};
+use super::solution::Algorithm;
 
 #[derive(Debug)]
 pub struct Sia {
@@ -13,7 +14,7 @@ pub struct Sia {
     pub size: usize,
     pub heuristic: Heuristic,
     pub difficulty: Difficulty,
-    //algo
+    pub algorithm: Algorithm,
 }
 
 fn not_supported(arg: &str, option: &str) -> ! {
@@ -70,6 +71,14 @@ fn clap_your_hands() -> Sia {
 				.takes_value(true)
 				.value_name("EASY|MEDIUM|HARD")
 				.help("This is how much randomized puzzle will be")
+		)
+        .arg(
+			Arg::with_name("algorithm")
+				.short("a")
+				.long("algo")
+				.takes_value(true)
+				.value_name("ASTAR|IDASTAR")
+				.help("Algorithm used to resolve puzzle")
 		);
 
     let matches = clap_app.get_matches();
@@ -120,12 +129,22 @@ fn clap_your_hands() -> Sia {
     };
     /*													*/
 
+    /* algorithm option 								*/
+    let input_algorithm = matches.value_of("algorithm").unwrap_or("ASTAR");
+    let algorithm = match input_algorithm {
+        "ASTAR" | "astar" => Algorithm::AStar,
+        "IDASTAR" | "idastar" => Algorithm::IDAStar,
+        _ => not_supported(input_algorithm, "algorithm"),
+    };
+    /*													*/
+
     Sia {
         file,
         kind,
         size,
         heuristic,
         difficulty,
+        algorithm,
     }
 }
 

@@ -3,6 +3,7 @@ mod args;
 mod generate;
 mod graph;
 mod heuristic;
+mod ida_star;
 mod inversions;
 mod moves;
 mod parsing;
@@ -55,7 +56,7 @@ fn n_puzzle(options: &Sia) -> Result<(), Box<dyn Error>> {
 	}
 	puzzle.set_goal(&goal);
 
-	Ok(solve(puzzle, goal, options.heuristic))
+	Ok(solve(puzzle, goal, options))
 }
 
 fn main() {

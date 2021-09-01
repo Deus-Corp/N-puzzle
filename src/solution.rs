@@ -1,6 +1,14 @@
 use super::a_star::a_star;
-use super::heuristic::{get_heuristic, Heuristic};
+use super::args::Sia;
+use super::heuristic;
+use super::ida_star::ida_star;
 use super::puzzle::Puzzle;
+
+#[derive(Clone, Copy, Debug)]
+pub enum Algorithm {
+    AStar,
+    IDAStar,
+}
 
 pub struct Solution {
     pub total_opened: usize,
@@ -26,12 +34,16 @@ impl fmt::Display for Solution {
     }
 }
 
-pub fn solve(start: Puzzle, end: Puzzle, heuristic: Heuristic) {
-    let h = get_heuristic(heuristic);
-    let solution = a_star(start, end, h);
+pub fn solve(start: Puzzle, end: Puzzle, options: &Sia) {
+    let h = heuristic::get_heuristic(options.heuristic);
+
+    let solution = match options.algorithm {
+        Algorithm::AStar => a_star(start, end, h),
+        Algorithm::IDAStar => ida_star(start, end, h),
+    };
 
     match solution {
         Some(s) => print!("{}", s),
         None => println!("No solution !"),
-    }
+    };
 }
