@@ -48,6 +48,7 @@ fn search(
     if start == end {
         return SearchResult::Found;
     }
+    let mut min = None;
     let mut neighbors = start
         .neighbors()
         .into_iter()
@@ -60,7 +61,6 @@ fn search(
         })
         .collect::<Vec<_>>();
     neighbors.sort_by_key(|&(_, c)| c);
-    let mut min = None;
     for (node, _) in neighbors {
         path.push(node);
         let t = search(path, g + 1, bound, &end, h);
@@ -70,7 +70,8 @@ fn search(
                 Some(n) if m < n => min = Some(m),
                 Some(_) => (),
             },
-            s => return s,
+            SearchResult::Found => return SearchResult::Found,
+            SearchResult::NotFound => (),
         };
         path.pop();
     }
