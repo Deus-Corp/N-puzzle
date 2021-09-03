@@ -8,6 +8,7 @@ pub enum SearchResult {
 }
 
 // [https://en.wikipedia.org/wiki/Iterative_deepening_A*]
+// [https://github.com/samueltardieu/pathfinding/blob/main/src/directed/idastar.rs]
 //
 pub fn ida_star(
     start: Puzzle,
@@ -18,8 +19,7 @@ pub fn ida_star(
     let mut path = vec![start.clone()];
 
     loop {
-        match search(&mut path, 0, bound, &start, &end, &h) {
-            SearchResult::Minimum(m) => bound = m,
+        match search(&mut path, 0, bound, &end, &h) {
             SearchResult::Found => {
                 return Some(Solution {
                     total_opened: 0,
@@ -27,6 +27,7 @@ pub fn ida_star(
                     path,
                 })
             }
+            SearchResult::Minimum(m) => bound = m,
             SearchResult::NotFound => return None,
         }
     }
@@ -36,39 +37,46 @@ fn search(
     path: &mut Vec<Puzzle>,
     g: u32,
     bound: u32,
-    start: &Puzzle,
     end: &Puzzle,
     h: &Box<dyn Fn(&Puzzle, &Puzzle) -> u32>,
 ) -> SearchResult {
-    let mut min = SearchResult::NotFound;
-    let node = path.last().unwrap();
+    let start = path.last().unwrap();
     let f = g + h(&start, &end);
     if f > bound {
         return SearchResult::Minimum(f);
     }
-    if node == end {
+    if start == end {
         return SearchResult::Found;
     }
-    for neighbor in node.neighbors() {
-        if !path.contains(&neighbor) {
-            path.push(neighbor);
-            let t = search(path, 0, bound, &start, &end, h);
-            match t {
-                SearchResult::Minimum(m) => match min {
-                    SearchResult::Minimum(min_value) => {
-                        if m < min_value {
-                            min = SearchResult::Minimum(m)
-                        }
-                    }
-                    _ => {
-                        min = SearchResult::Minimum(m);
-                    }
-                },
-                s => return s,
-            };
-            path.pop();
-        }
+    let mut neighbors = start
+        .neighbors()
+        .into_iter()
+        .filter_map(|p| {
+            if path.contains(&p) {
+                None
+            } else {
+                Some((p.clone(), g + h(&p, end) + 1))
+            }
+        })
+        .collect::<Vec<_>>();
+    neighbors.sort_by_key(|&(_, c)| c);
+    let mut min = None;
+    for (node, _) in neighbors {
+        path.push(node);
+        let t = search(path, g + 1, bound, &end, h);
+        match t {
+            SearchResult::Minimum(m) => match min {
+                None => min = Some(m),
+                Some(n) if m < n => min = Some(m),
+                Some(_) => (),
+            },
+            s => return s,
+        };
+        path.pop();
     }
 
-    min
+    match min {
+        Some(m) => SearchResult::Minimum(m),
+        None => SearchResult::NotFound,
+    }
 }
