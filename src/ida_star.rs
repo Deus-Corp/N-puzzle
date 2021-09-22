@@ -1,3 +1,4 @@
+use super::heuristics::Heuristic;
 use super::puzzle::Puzzle;
 use super::solution::Solution;
 
@@ -13,13 +14,13 @@ pub enum SearchResult {
 pub fn ida_star(
     start: Puzzle,
     end: Puzzle,
-    h: Box<dyn Fn(&Puzzle, &Puzzle) -> u32>,
+    h: &dyn Heuristic,
 ) -> Option<Solution> {
-    let mut bound = h(&start, &end);
+    let mut bound = h.first_time(&start, &end);
     let mut path = vec![start.clone()];
 
     loop {
-        match search(&mut path, 0, bound, &end, &h) {
+        match search(&mut path, 0, bound, &end, h) {
             SearchResult::Found => {
                 return Some(Solution {
                     total_opened: 0,
@@ -38,10 +39,10 @@ fn search(
     g: u32,
     bound: u32,
     end: &Puzzle,
-    h: &Box<dyn Fn(&Puzzle, &Puzzle) -> u32>,
+    h: &dyn Heuristic,
 ) -> SearchResult {
     let start = path.last().unwrap();
-    let f = g + h(&start, &end);
+    let f = g + h.first_time(&start, &end);
     if f > bound {
         return SearchResult::Minimum(f);
     }
@@ -56,7 +57,7 @@ fn search(
             if path.contains(&p) {
                 None
             } else {
-                Some((p.clone(), g + h(&p, end) + 1))
+                Some((p.clone(), g + h.first_time(&p, end) + 1))
             }
         })
         .collect::<Vec<_>>();

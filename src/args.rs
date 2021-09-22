@@ -3,16 +3,16 @@ use clap::{App, Arg};
 
 use std::process;
 
-use super::heuristic::Heuristic;
-use super::puzzle::{Difficulty, Kind};
+use super::heuristics::HeuristicFunc;
+use super::puzzle::{Difficulty, PuzzleKind};
 use super::solution::Algorithm;
 
 #[derive(Debug)]
 pub struct Sia {
     pub file: Option<String>,
-    pub kind: Kind,
+    pub kind: PuzzleKind,
     pub size: usize,
-    pub heuristic: Heuristic,
+    pub heuristic: HeuristicFunc,
     pub difficulty: Difficulty,
     pub algorithm: Algorithm,
 }
@@ -91,9 +91,9 @@ fn clap_your_hands() -> Sia {
     /* kind option										*/
     let input_kind = matches.value_of("kind").unwrap_or("CLASSIC");
     let kind = match input_kind {
-        "CLASSIC" | "classic" => Kind::Classic,
-        "SNAIL" | "snail" => Kind::Snail,
-        "REVERSE" | "reverse" => Kind::Reverse,
+        "CLASSIC" | "classic" => PuzzleKind::Classic,
+        "SNAIL" | "snail" => PuzzleKind::Snail,
+        "REVERSE" | "reverse" => PuzzleKind::Reverse,
         _ => not_supported(input_kind, "kind"),
     };
     /*													*/
@@ -110,10 +110,10 @@ fn clap_your_hands() -> Sia {
     let input_heuristic =
         matches.value_of("heuristic").unwrap_or("HAMMING");
     let heuristic = match input_heuristic {
-        "ZERO" | "zero" => Heuristic::Zero,
-        "HAMMING" | "hamming" => Heuristic::HammingDistance,
-        "MANHATTAN" | "manhattan" => Heuristic::ManhattanDistance,
-        "LINEAR" | "linear" => Heuristic::LinearConflicts,
+        "ZERO" | "zero" => HeuristicFunc::Zero,
+        "HAMMING" | "hamming" => HeuristicFunc::HammingDistance,
+        "MANHATTAN" | "manhattan" => HeuristicFunc::ManhattanDistance,
+        "LINEAR" | "linear" => HeuristicFunc::LinearConflicts,
         _ => not_supported(input_heuristic, "heuristic"),
     };
     /*													*/

@@ -2,7 +2,7 @@ mod a_star;
 mod args;
 mod generate;
 mod graph;
-mod heuristic;
+mod heuristics;
 mod ida_star;
 mod inversions;
 mod moves;

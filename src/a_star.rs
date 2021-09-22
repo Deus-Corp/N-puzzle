@@ -1,3 +1,4 @@
+use super::heuristics::Heuristic;
 use super::puzzle::Puzzle;
 use super::solution::Solution;
 use std::collections::{BinaryHeap, HashMap};
@@ -25,7 +26,7 @@ pub fn reconstruct_path(
 pub fn a_star(
     start: Puzzle,
     end: Puzzle,
-    h: Box<dyn Fn(&Puzzle, &Puzzle) -> u32>,
+    h: &dyn Heuristic,
 ) -> Option<Solution> {
     let mut open_list = BinaryHeap::new();
     let mut came_from = HashMap::new();
@@ -34,7 +35,7 @@ pub fn a_star(
     open_list.push(Score {
         puzzle: start.clone(),
         g: 0,
-        f: h(&start, &end),
+        f: h.first_time(&start, &end),
     });
 
     while let Some(current) = open_list.pop() {
@@ -52,7 +53,7 @@ pub fn a_star(
             }
             came_from.insert(neighbor.clone(), current.puzzle.clone());
             let g = current.g + TRANSITION_COST;
-            let f = g + h(&neighbor, &end);
+            let f = g + h.difference(&neighbor, &end);
             open_list.push(Score {
                 puzzle: neighbor,
                 g,

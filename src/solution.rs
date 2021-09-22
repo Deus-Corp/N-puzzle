@@ -1,6 +1,6 @@
 use super::a_star::a_star;
 use super::args::Sia;
-use super::heuristic;
+use super::heuristics;
 use super::ida_star::ida_star;
 use super::puzzle::Puzzle;
 
@@ -20,7 +20,7 @@ use std::fmt;
 
 impl fmt::Display for Solution {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "Solution:")?;
+        writeln!(f, "Solution:\n")?;
         for puzzle in &self.path {
             writeln!(f, "{:?}", puzzle.was.opposite())?;
             for chunk in puzzle.flat.chunks(puzzle.n) {
@@ -36,11 +36,11 @@ impl fmt::Display for Solution {
 }
 
 pub fn solve(start: Puzzle, end: Puzzle, options: &Sia) {
-    let h = heuristic::get_heuristic(options.heuristic);
+    let h = heuristics::get_heuristic(options.heuristic);
 
     let solution = match options.algorithm {
-        Algorithm::AStar => a_star(start, end, h),
-        Algorithm::IDAStar => ida_star(start, end, h),
+        Algorithm::AStar => a_star(start, end, h.as_ref()),
+        Algorithm::IDAStar => ida_star(start, end, h.as_ref()),
     };
 
     match solution {

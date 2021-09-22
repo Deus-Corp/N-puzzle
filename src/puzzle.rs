@@ -4,7 +4,7 @@ use super::moves::Move;
 pub type Matrix = Vec<Vec<u16>>;
 
 #[derive(Clone, Copy, Debug)]
-pub enum Kind {
+pub enum PuzzleKind {
     Classic,
     Snail,
     Reverse,
@@ -47,16 +47,16 @@ impl Puzzle {
         }
     }
 
-    pub fn new(kind: Kind, size: usize) -> Puzzle {
+    pub fn new(kind: PuzzleKind, size: usize) -> Puzzle {
         match kind {
-            Kind::Classic => generate::new_classic(size),
-            Kind::Snail => generate::new_snail(size),
-            Kind::Reverse => generate::new_reverse(size),
+            PuzzleKind::Classic => generate::new_classic(size),
+            PuzzleKind::Snail => generate::new_snail(size),
+            PuzzleKind::Reverse => generate::new_reverse(size),
         }
     }
 
     pub fn new_randomized(
-        kind: Kind,
+        kind: PuzzleKind,
         difficulty: Difficulty,
         size: usize,
     ) -> Puzzle {
@@ -172,7 +172,7 @@ mod tests {
     #[test]
     fn test_new_classic() {
         assert_eq!(
-            Puzzle::new(Kind::Classic, 3),
+            Puzzle::new(PuzzleKind::Classic, 3),
             Puzzle {
                 n: 3,
                 flat: vec![1, 2, 3, 4, 5, 6, 7, 8, 0],
@@ -183,7 +183,7 @@ mod tests {
         );
 
         assert_eq!(
-            Puzzle::new(Kind::Classic, 4),
+            Puzzle::new(PuzzleKind::Classic, 4),
             Puzzle {
                 n: 4,
                 flat: vec![
@@ -196,7 +196,7 @@ mod tests {
         );
 
         assert_eq!(
-            Puzzle::new(Kind::Classic, 5),
+            Puzzle::new(PuzzleKind::Classic, 5),
             Puzzle {
                 n: 5,
                 flat: vec![
