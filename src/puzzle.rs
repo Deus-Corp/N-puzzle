@@ -91,6 +91,16 @@ impl Puzzle {
             self.end[goal.flat[i] as usize] = i;
         }
     }
+
+    pub fn last_blank_index(&self) -> usize {
+        match self.was {
+            Move::Up => self.blank - self.n,
+            Move::Down => self.blank + self.n,
+            Move::Left => self.blank - 1,
+            Move::Right => self.blank + 1,
+            Move::Hold => self.blank,
+        }
+    }
 }
 
 use std::fmt;

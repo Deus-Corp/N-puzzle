@@ -26,7 +26,7 @@ pub fn reconstruct_path(
 pub fn a_star(
     start: Puzzle,
     end: Puzzle,
-    h: &dyn Heuristic,
+    h: &mut dyn Heuristic,
 ) -> Option<Solution> {
     let mut open_list = BinaryHeap::new();
     let mut came_from = HashMap::new();

@@ -14,7 +14,7 @@ pub enum SearchResult {
 pub fn ida_star(
     start: Puzzle,
     end: Puzzle,
-    h: &dyn Heuristic,
+    h: &mut dyn Heuristic,
 ) -> Option<Solution> {
     let mut bound = h.first_time(&start, &end);
     let mut path = vec![start.clone()];
@@ -39,7 +39,7 @@ fn search(
     g: u32,
     bound: u32,
     end: &Puzzle,
-    h: &dyn Heuristic,
+    h: &mut dyn Heuristic,
 ) -> SearchResult {
     let start = path.last().unwrap();
     let f = g + h.first_time(&start, &end);

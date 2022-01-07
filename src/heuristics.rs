@@ -1,4 +1,5 @@
 use super::graph::LinearConflictGraph;
+use super::moves::Move;
 use super::puzzle::Puzzle;
 use super::tile::Tile;
 
@@ -11,8 +12,8 @@ pub enum HeuristicFunc {
 }
 
 pub trait Heuristic {
-    fn first_time(&self, p1: &Puzzle, p2: &Puzzle) -> u32;
-    fn difference(&self, p1: &Puzzle, p2: &Puzzle) -> u32;
+    fn first_time(&mut self, p1: &Puzzle, p2: &Puzzle) -> u32;
+    fn difference(&mut self, p1: &Puzzle, p2: &Puzzle) -> u32;
 }
 
 struct Zero {}
@@ -24,36 +25,74 @@ impl Zero {
 }
 
 impl Heuristic for Zero {
-    fn first_time(&self, p1: &Puzzle, p2: &Puzzle) -> u32 {
+    fn first_time(&mut self, p1: &Puzzle, p2: &Puzzle) -> u32 {
         Zero::zero(p1, p2)
     }
 
-    fn difference(&self, p1: &Puzzle, p2: &Puzzle) -> u32 {
+    fn difference(&mut self, p1: &Puzzle, p2: &Puzzle) -> u32 {
         0
     }
 }
 
-struct HammingDistance {}
+struct HammingDistance {
+    misplaced: u32,
+}
 
 impl HammingDistance {
     fn hamming_distance(p: &Puzzle, _: &Puzzle) -> u32 {
         let mut misplaced = 0;
         for i in 0..p.flat.len() {
+            if p.flat[i] == 0 {
+                continue;
+            }
             if i != p.end[p.flat[i] as usize] {
                 misplaced += 1;
             }
         }
         misplaced
     }
+
+    fn last_tile_score(&mut self, p: &Puzzle) -> u32 {
+        let last_blank = p.last_blank_index();
+        let moved_tile = p.flat[last_blank];
+
+        let actual = p.blank;
+        let goal = p.end[moved_tile as usize];
+
+        if actual != goal {
+            1
+        } else {
+            0
+        }
+    }
+
+    fn new_tile_score(&mut self, p: &Puzzle) -> u32 {
+        let last_blank = p.last_blank_index();
+        let moved_tile = p.flat[last_blank];
+
+        let actual = last_blank;
+        let goal = p.end[moved_tile as usize];
+
+        if actual != goal {
+            1
+        } else {
+            0
+        }
+    }
 }
 
 impl Heuristic for HammingDistance {
-    fn first_time(&self, p1: &Puzzle, p2: &Puzzle) -> u32 {
-        HammingDistance::hamming_distance(p1, p2)
+    fn first_time(&mut self, p1: &Puzzle, p2: &Puzzle) -> u32 {
+        self.misplaced = HammingDistance::hamming_distance(p1, p2);
+
+        self.misplaced
     }
 
-    fn difference(&self, p1: &Puzzle, p2: &Puzzle) -> u32 {
-        0
+    fn difference(&mut self, p1: &Puzzle, p2: &Puzzle) -> u32 {
+        self.misplaced -= self.last_tile_score(p1);
+        self.misplaced += self.new_tile_score(p1);
+
+        self.misplaced
     }
 }
 
@@ -81,11 +120,11 @@ impl ManhattanDistance {
 }
 
 impl Heuristic for ManhattanDistance {
-    fn first_time(&self, p1: &Puzzle, p2: &Puzzle) -> u32 {
+    fn first_time(&mut self, p1: &Puzzle, p2: &Puzzle) -> u32 {
         ManhattanDistance::manhattan_distance(p1, p2)
     }
 
-    fn difference(&self, p1: &Puzzle, p2: &Puzzle) -> u32 {
+    fn difference(&mut self, p1: &Puzzle, p2: &Puzzle) -> u32 {
         0
     }
 }
@@ -152,11 +191,11 @@ impl LinearConflicts {
 }
 
 impl Heuristic for LinearConflicts {
-    fn first_time(&self, p1: &Puzzle, p2: &Puzzle) -> u32 {
+    fn first_time(&mut self, p1: &Puzzle, p2: &Puzzle) -> u32 {
         LinearConflicts::linear_conflicts(p1, p2)
     }
 
-    fn difference(&self, p1: &Puzzle, p2: &Puzzle) -> u32 {
+    fn difference(&mut self, p1: &Puzzle, p2: &Puzzle) -> u32 {
         0
     }
 }
@@ -164,7 +203,9 @@ impl Heuristic for LinearConflicts {
 pub fn get_heuristic(heuristic: HeuristicFunc) -> Box<dyn Heuristic> {
     match heuristic {
         HeuristicFunc::Zero => Box::new(Zero {}),
-        HeuristicFunc::HammingDistance => Box::new(HammingDistance {}),
+        HeuristicFunc::HammingDistance => {
+            Box::new(HammingDistance { misplaced: 0 })
+        }
         HeuristicFunc::ManhattanDistance => Box::new(ManhattanDistance {}),
         HeuristicFunc::LinearConflicts => Box::new(LinearConflicts {}),
     }
@@ -327,5 +368,32 @@ mod tests {
         assert_eq!(LinearConflicts::linear_conflicts_sum(&sum_1), 1);
         assert_eq!(LinearConflicts::linear_conflicts_sum(&sum_3), 3);
         assert_eq!(LinearConflicts::linear_conflicts_sum(&sum_5), 5);
+    }
+
+    #[test]
+    fn test_hamming_difference() {
+        let mut p1 = Puzzle::from_matrix(
+            3,
+            vec![vec![5, 4, 3], vec![8, 6, 1], vec![7, 0, 2]],
+        );
+
+        let mut p2 = Puzzle::from_matrix(
+            3,
+            vec![vec![5, 4, 3], vec![8, 6, 1], vec![0, 7, 2]],
+        );
+
+        let goal = Puzzle::from_matrix(
+            3,
+            vec![vec![0, 1, 2], vec![3, 4, 5], vec![6, 7, 8]],
+        );
+
+        p1.set_goal(&goal);
+        p2.was = Move::Right;
+        p2.set_goal(&goal);
+
+        let mut h = get_heuristic(HeuristicFunc::HammingDistance);
+
+        assert_eq!(h.first_time(&p1, &p2), 8);
+        assert_eq!(h.difference(&p2, &p2), 7);
     }
 }

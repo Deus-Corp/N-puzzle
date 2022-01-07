@@ -36,11 +36,11 @@ impl fmt::Display for Solution {
 }
 
 pub fn solve(start: Puzzle, end: Puzzle, options: &Sia) {
-    let h = heuristics::get_heuristic(options.heuristic);
+    let mut h = heuristics::get_heuristic(options.heuristic);
 
     let solution = match options.algorithm {
-        Algorithm::AStar => a_star(start, end, h.as_ref()),
-        Algorithm::IDAStar => ida_star(start, end, h.as_ref()),
+        Algorithm::AStar => a_star(start, end, h.as_mut()),
+        Algorithm::IDAStar => ida_star(start, end, h.as_mut()),
     };
 
     match solution {
